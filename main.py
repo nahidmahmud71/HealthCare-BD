@@ -5,15 +5,16 @@ from streamlit_folium import folium_static
 from streamlit_lottie import st_lottie
 import requests
 
-# ================= 1. CONFIGURATION =================
+# ================= 1. PAGE CONFIGURATION (MUST BE AT TOP) =================
 st.set_page_config(
-    page_title="HealthConnect BD | Emergency Hub",
+    page_title="HealthConnect BD",
     page_icon="🏥",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
 
-# ================= 2. ANIMATION & STYLING =================
+# ================= 2. ASSETS & LOADER FUNCTIONS =================
+@st.cache_data
 def load_lottie(url):
     try:
         r = requests.get(url)
@@ -21,290 +22,272 @@ def load_lottie(url):
         return r.json()
     except: return None
 
-# Load Animations
+# Load Premium Animations
+anim_hero = load_lottie("https://assets5.lottiefiles.com/packages/lf20_5njp3vgg.json")
 anim_map = load_lottie("https://assets3.lottiefiles.com/packages/lf20_s5id889b.json")
-anim_doc = load_lottie("https://assets10.lottiefiles.com/packages/lf20_5njp3vgg.json")
 anim_amb = load_lottie("https://assets9.lottiefiles.com/packages/lf20_z4cshyhf.json")
+anim_blood = load_lottie("https://assets6.lottiefiles.com/packages/lf20_9xR7SM.json")
 
-# Advanced CSS (Glassmorphism & Gradients)
+# ================= 3. ADVANCED CSS (DESIGN SYSTEM) =================
 st.markdown("""
 <style>
-    /* Global Background */
-    .stApp {
-        background-color: #f8f9fa;
+    /* Global Font & Theme */
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap');
+    
+    html, body, [class*="css"]  {
+        font-family: 'Poppins', sans-serif;
+        background-color: #f4f6f9;
     }
     
-    /* Header Gradient */
-    .main-title {
-        font-size: 3.5rem;
+    /* Hero Section Gradient Text */
+    .hero-title {
+        font-size: 3rem;
         font-weight: 800;
-        background: linear-gradient(120deg, #ff4b4b, #ff9068);
+        background: linear-gradient(to right, #FF4B4B, #FF9068);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         text-align: center;
-        margin-bottom: 10px;
-        text-shadow: 2px 2px 10px rgba(0,0,0,0.1);
+        margin-bottom: 5px;
+        text-shadow: 2px 2px 20px rgba(0,0,0,0.1);
     }
     
-    /* Stats Box */
-    .stat-box {
+    /* Modern Card Effects */
+    .feature-card {
         background: white;
-        padding: 20px;
-        border-radius: 15px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        padding: 25px;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
         text-align: center;
-        border-bottom: 5px solid #ff4b4b;
+        transition: all 0.3s ease;
+        border-bottom: 4px solid #FF4B4B;
+        height: 100%;
     }
-
-    /* Hospital Card */
-    .hospital-card {
+    .feature-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 35px rgba(255, 75, 75, 0.2);
+    }
+    
+    /* Info Cards */
+    .hospital-box {
         background: linear-gradient(145deg, #ffffff, #f0f0f0);
         padding: 20px;
         border-radius: 15px;
-        border-left: 6px solid #ff4b4b;
-        box-shadow: 5px 5px 15px #d1d1d1, -5px -5px 15px #ffffff;
-        margin-bottom: 20px;
-        transition: transform 0.3s;
-    }
-    .hospital-card:hover {
-        transform: translateY(-5px);
-    }
-
-    /* Doctor Card */
-    .doc-card {
-        background: white;
-        padding: 15px;
-        border-radius: 12px;
-        border-top: 4px solid #4F8BF9;
+        border-left: 6px solid #FF4B4B;
         box-shadow: 0 4px 10px rgba(0,0,0,0.05);
         margin-bottom: 15px;
     }
-
-    /* Ambulance Card */
-    .amb-card {
-        background: #fff5f5;
+    
+    .doctor-box {
+        background: white;
         padding: 15px;
         border-radius: 15px;
+        border-top: 5px solid #4F8BF9;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        margin-bottom: 15px;
+    }
+
+    .amb-box {
+        background: #fff5f5;
+        padding: 20px;
+        border-radius: 20px;
         border: 2px solid #ffcccc;
         text-align: center;
-        color: #333;
+        margin-bottom: 15px;
     }
-    
-    /* Buttons */
+
+    /* Custom Button Styling */
     .stButton>button {
-        background: linear-gradient(90deg, #FF4B4B, #FF9068);
+        background: linear-gradient(90deg, #4F8BF9, #00C6FF);
         color: white;
         border: none;
-        border-radius: 25px;
-        font-weight: bold;
-        transition: 0.3s;
+        border-radius: 50px;
+        padding: 12px 25px;
+        font-weight: 700;
         width: 100%;
+        transition: 0.3s;
+        box-shadow: 0 5px 15px rgba(0, 198, 255, 0.3);
     }
     .stButton>button:hover {
         transform: scale(1.05);
-        box-shadow: 0 5px 15px rgba(255, 75, 75, 0.4);
+        box-shadow: 0 8px 20px rgba(0, 198, 255, 0.5);
     }
 </style>
 """, unsafe_allow_html=True)
 
-# ================= 3. DATA LOADING =================
+# ================= 4. ROBUST DATA LOADING =================
 @st.cache_data
 def load_data():
-    try:
-        df_hosp = pd.read_csv("hospitals_64.csv")
+    # Fallback Mechanism: If CSV missing, create empty structure
+    try: df_hosp = pd.read_csv("hospitals_64.csv")
     except: df_hosp = pd.DataFrame(columns=["District", "Name", "Location", "Phone", "Lat", "Lon"])
     
-    try:
-        df_doc = pd.read_csv("doctors_64.csv")
+    try: df_doc = pd.read_csv("doctors_64.csv")
     except: df_doc = pd.DataFrame(columns=["District", "Name", "Specialty", "Hospital", "Phone"])
     
-    try:
-        df_amb = pd.read_csv("ambulances_64.csv")
+    try: df_amb = pd.read_csv("ambulances_64.csv")
     except: df_amb = pd.DataFrame(columns=["District", "ServiceName", "Contact"])
     
     return df_hosp, df_doc, df_amb
 
 df_hosp, df_doc, df_amb = load_data()
 
-# ================= 4. SIDEBAR NAVIGATION =================
+# ================= 5. SIDEBAR NAVIGATION =================
 with st.sidebar:
-    if anim_doc: st_lottie(anim_doc, height=150, key="anim_sidebar")
+    st.image("https://cdn-icons-png.flaticon.com/512/3063/3063205.png", width=100)
+    st.title("HealthConnect")
+    st.write("বাংলাদেশের ৬৪ জেলার ইমার্জেন্সি সেবা")
     
-    st.markdown("## 🏥 HealthConnect")
-    st.write("বাংলাদেশের সকল জেলার স্বাস্থ্য সেবা।")
-    
-    # --- SMART DISTRICT SELECTOR ---
-    all_districts = sorted(df_hosp['District'].unique().tolist()) if not df_hosp.empty else ["Dhaka"]
-    selected_district = st.selectbox("📍 আপনার জেলা নির্বাচন করুন:", all_districts)
-
-    menu = st.radio("মেনু:", 
-        ["🏠 ড্যাশবোর্ড", "🏥 হাসপাতাল ও ম্যাপ", "👨‍⚕️ ডাক্তার খুঁজুন", "🚑 অ্যাম্বুলেন্স", "🩸 ব্লাড ব্যাংক"]
-    )
+    # Smart District Filter
+    if not df_hosp.empty:
+        all_districts = sorted(df_hosp['District'].unique().tolist())
+        selected_district = st.selectbox("📍 আপনার জেলা নির্বাচন করুন:", all_districts)
+    else:
+        st.warning("⚠️ ডাটাবেস ফাইল পাওয়া যায়নি")
+        selected_district = "Dhaka"
+        
+    menu = st.radio("মেনু:", ["🏠 হোম", "🏥 হাসপাতাল", "👨‍⚕️ ডাক্তার", "🚑 অ্যাম্বুলেন্স", "🩸 ব্লাড ব্যাংক"])
     
     st.markdown("---")
-    st.info("জরুরী প্রয়োজনে: **999**")
+    st.info("জরুরী কল: **999**")
 
-# ================= 5. MAIN FEATURES =================
+# ================= 6. MAIN APPLICATION =================
 
-# --- 🏠 DASHBOARD ---
-if menu == "🏠 ড্যাশবোর্ড":
-    st.markdown("<div class='main-title'>HealthConnect Bangladesh</div>", unsafe_allow_html=True)
-    st.markdown(f"<h3 style='text-align:center; color:#555;'>বর্তমান জেলা: <b>{selected_district}</b></h3>", unsafe_allow_html=True)
+# --- 🏠 HOME PAGE ---
+if menu == "🏠 হোম":
+    st.markdown("<div class='hero-title'>HealthConnect BD</div>", unsafe_allow_html=True)
+    st.markdown(f"<p style='text-align:center; color:#666;'>আপনার জেলা: <b>{selected_district}</b> | আপনার বিশ্বস্ত স্বাস্থ্য সাথী</p>", unsafe_allow_html=True)
     
-    # Stats
-    col1, col2, col3 = st.columns(3)
-    dist_hosp_count = len(df_hosp[df_hosp['District'] == selected_district])
-    dist_doc_count = len(df_doc[df_doc['District'] == selected_district])
-    
-    with col1:
-        st.markdown(f"""
-        <div class="stat-box">
-            <h1 style="color:#ff4b4b; margin:0;">{dist_hosp_count}</h1>
-            <p>হাসপাতাল</p>
-        </div>
-        """, unsafe_allow_html=True)
-    with col2:
-        st.markdown(f"""
-        <div class="stat-box">
-            <h1 style="color:#4F8BF9; margin:0;">{dist_doc_count}</h1>
-            <p>ডাক্তার</p>
-        </div>
-        """, unsafe_allow_html=True)
-    with col3:
-        st.markdown(f"""
-        <div class="stat-box">
-            <h1 style="color:#28a745; margin:0;">24/7</h1>
-            <p>সার্ভিস</p>
-        </div>
-        """, unsafe_allow_html=True)
-
-    st.markdown("---")
-    c1, c2 = st.columns([1, 1])
-    with c1:
-        st.markdown("### 👋 আমাদের সেবাসমূহ:")
-        st.write("""
-        * ✅ ৬৪ জেলার হাসপাতালের এক্সাক্ট লোকেশন
-        * ✅ বিশেষজ্ঞ ডাক্তারদের চেম্বার ও ফোন নাম্বার
-        * ✅ লোকাল এবং সরকারি অ্যাম্বুলেন্স সার্ভিস
-        * ✅ লাইভ ব্লাড ডোনার কানেকশন
-        """)
+    c1, c2, c3 = st.columns([1, 2, 1])
     with c2:
-        if anim_map: st_lottie(anim_map, height=300, key="anim_dash")
+        if anim_hero: st_lottie(anim_hero, height=250, key="hero_anim")
+
+    st.markdown("### 🚀 আপনি কী সেবা খুঁজছেন?")
+    
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.markdown("""<div class="feature-card"><h1>🏥</h1><h4>হাসপাতাল</h4><p>লোকেশন ও ম্যাপ</p></div>""", unsafe_allow_html=True)
+    with col2:
+        st.markdown("""<div class="feature-card"><h1>👨‍⚕️</h1><h4>ডাক্তার</h4><p>চেম্বার ও সিরিয়াল</p></div>""", unsafe_allow_html=True)
+    with col3:
+        st.markdown("""<div class="feature-card"><h1>🚑</h1><h4>অ্যাম্বুলেন্স</h4><p>জরুরী সেবা</p></div>""", unsafe_allow_html=True)
+    with col4:
+        st.markdown("""<div class="feature-card"><h1>🩸</h1><h4>ব্লাড ব্যাংক</h4><p>ডোনার খুঁজুন</p></div>""", unsafe_allow_html=True)
+
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.info("👈 বাম পাশের মেনু থেকে বিস্তারিত অপশনে যান।")
 
 # --- 🏥 HOSPITAL & MAP ---
-elif menu == "🏥 হাসপাতাল ও ম্যাপ":
+elif menu == "🏥 হাসপাতাল":
     st.markdown(f"## 🏥 {selected_district}-এর হাসপাতালসমূহ")
     
     filtered_hosp = df_hosp[df_hosp['District'] == selected_district]
     
     if not filtered_hosp.empty:
-        col1, col2 = st.columns([1.5, 2.5])
+        tab1, tab2 = st.tabs(["📋 তালিকা দেখুন", "🗺️ ম্যাপে দেখুন"])
         
-        with col1:
-            st.write("### 📋 তালিকা:")
+        with tab1:
             for _, row in filtered_hosp.iterrows():
                 st.markdown(f"""
-                <div class="hospital-card">
-                    <h4 style="margin:0; color:#333;">{row['Name']}</h4>
-                    <small style="color:#666;">📍 {row['Location']}</small>
-                    <h5 style="margin:5px 0 0 0; color:#FF4B4B;">📞 {row['Phone']}</h5>
+                <div class="hospital-box">
+                    <h3 style="margin:0; color:#333;">{row['Name']}</h3>
+                    <p style="margin:0; color:#666;">📍 {row['Location']}</p>
+                    <a href="tel:{row['Phone']}" style="text-decoration:none;">
+                        <h4 style="margin:5px 0 0 0; color:#FF4B4B;">📞 {row['Phone']}</h4>
+                    </a>
                 </div>
                 """, unsafe_allow_html=True)
-        
-        with col2:
-            st.write("### 🗺️ ম্যাপ ভিউ (Live):")
-            # Create Map
+                
+        with tab2:
+            st.write("### 🗺️ লাইভ লোকেশন")
+            # Calculate Average Lat/Lon for centering map
             avg_lat = filtered_hosp['Lat'].mean()
             avg_lon = filtered_hosp['Lon'].mean()
+            
             m = folium.Map(location=[avg_lat, avg_lon], zoom_start=13)
             
             for _, row in filtered_hosp.iterrows():
                 folium.Marker(
                     [row['Lat'], row['Lon']],
                     popup=f"<b>{row['Name']}</b><br>{row['Phone']}",
-                    tooltip=row['Name'],
                     icon=folium.Icon(color="red", icon="plus-sign")
                 ).add_to(m)
             
             folium_static(m)
     else:
-        st.warning(f"⚠️ {selected_district}-এর জন্য ডাটা এখনো আপডেট করা হয়নি।")
+        st.warning(f"⚠️ {selected_district}-এর জন্য এখনো ডাটা আপলোড করা হয়নি।")
+        if anim_map: st_lottie(anim_map, height=200)
 
-# --- 👨‍⚕️ DOCTOR FINDER ---
-elif menu == "👨‍⚕️ ডাক্তার খুঁজুন":
-    st.markdown(f"## 👨‍⚕️ বিশেষজ্ঞ ডাক্তার ({selected_district})")
+# --- 👨‍⚕️ DOCTOR ---
+elif menu == "👨‍⚕️ ডাক্তার":
+    st.markdown(f"## 👨‍⚕️ {selected_district}-এর ডাক্তারগণ")
     
     filtered_docs = df_doc[df_doc['District'] == selected_district]
     
     if not filtered_docs.empty:
-        # Smart Filter
+        # Smart Search
         specs = ["সকল"] + sorted(filtered_docs['Specialty'].unique().tolist())
-        selected_spec = st.selectbox("কোন বিশেষজ্ঞ ডাক্তার খুঁজছেন?", specs)
+        choice = st.selectbox("বিভাগ নির্বাচন করুন:", specs)
         
-        if selected_spec != "সকল":
-            filtered_docs = filtered_docs[filtered_docs['Specialty'] == selected_spec]
-        
-        # Display Grid Layout
+        if choice != "সকল":
+            filtered_docs = filtered_docs[filtered_docs['Specialty'] == choice]
+            
         cols = st.columns(2)
         for i, (index, row) in enumerate(filtered_docs.iterrows()):
             with cols[i % 2]:
                 st.markdown(f"""
-                <div class="doc-card">
-                    <div style="display:flex; justify-content:space-between;">
-                        <div>
-                            <h4 style="margin:0;">{row['Name']}</h4>
-                            <span style="background:#e3f2fd; color:#4F8BF9; padding:2px 6px; border-radius:4px; font-size:12px;">{row['Specialty']}</span>
-                            <p style="margin:5px 0 0 0; font-size:13px; color:#555;">🏥 {row['Hospital']}</p>
-                        </div>
-                        <div style="align-self:center;">
-                            <a href="tel:{row['Phone']}" style="text-decoration:none; font-size:20px;">📞</a>
-                        </div>
-                    </div>
+                <div class="doctor-box">
+                    <h4 style="margin:0;">{row['Name']}</h4>
+                    <span style="background:#e3f2fd; color:#4F8BF9; padding:2px 8px; border-radius:10px; font-size:12px;">{row['Specialty']}</span>
+                    <p style="margin:5px 0 0 0; font-size:13px;">🏥 {row['Hospital']}</p>
+                    <a href="tel:{row['Phone']}" style="text-decoration:none;">
+                        <button style="background:#28a745; color:white; border:none; padding:8px 10px; border-radius:5px; cursor:pointer; width:100%; margin-top:10px;">📞 সিরিয়াল দিন</button>
+                    </a>
                 </div>
                 """, unsafe_allow_html=True)
     else:
-        st.info("এই জেলায় ডাক্তারের তথ্য শীঘ্রই আসছে...")
+        st.info("ডাক্তারের তথ্য শীঘ্রই আপডেট করা হবে।")
 
 # --- 🚑 AMBULANCE ---
 elif menu == "🚑 অ্যাম্বুলেন্স":
     st.markdown(f"## 🚑 অ্যাম্বুলেন্স সার্ভিস ({selected_district})")
     
-    col_anim, col_info = st.columns([1, 2])
-    with col_anim:
+    c1, c2 = st.columns([1, 2])
+    with c1:
         if anim_amb: st_lottie(anim_amb, height=150)
-    with col_info:
-        st.error("🚨 জাতীয় জরুরী সেবা: **999** (টোল ফ্রি)")
+    with c2:
+        st.error("🚨 জরুরী প্রয়োজনে **৯৯৯** এ কল করুন।")
         
     filtered_amb = df_amb[(df_amb['District'] == selected_district) | (df_amb['District'] == 'All BD')]
     
     if not filtered_amb.empty:
         for _, row in filtered_amb.iterrows():
             st.markdown(f"""
-            <div class="amb-card">
+            <div class="amb-box">
                 <h3 style="margin:0;">🚑 {row['ServiceName']}</h3>
-                <h1 style="color:#FF4B4B; margin:5px 0;">{row['Contact']}</h1>
-                <a href="tel:{row['Contact']}"><button>সরাসরি কল করুন</button></a>
+                <h2 style="color:#FF4B4B; margin:5px 0;">{row['Contact']}</h2>
+                <a href="tel:{row['Contact']}"><button style="background:#FF4B4B; color:white; border:none; padding:10px; border-radius:5px; cursor:pointer;">সরাসরি কল করুন</button></a>
             </div>
-            <br>
             """, unsafe_allow_html=True)
     else:
-        st.warning("লোকাল অ্যাম্বুলেন্স ডাটা পাওয়া যায়নি। ৯৯৯ এ কল করুন।")
+        st.warning("লোকাল অ্যাম্বুলেন্স ডাটা নেই।")
 
 # --- 🩸 BLOOD BANK ---
 elif menu == "🩸 ব্লাড ব্যাংক":
     st.markdown("## 🩸 ব্লাড ডোনার খুঁজুন")
     
-    c1, c2 = st.columns(2)
-    with c1:
+    col1, col2 = st.columns([1, 1])
+    with col1:
+        if anim_blood: st_lottie(anim_blood, height=250)
+    with col2:
+        st.write("### ফিল্টার")
         bg = st.selectbox("রক্তের গ্রুপ:", ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"])
-    with c2:
-        area = st.text_input("এলাকা (ঐচ্ছিক):", placeholder="যেমন: ধানমন্ডি")
+        area = st.text_input("এলাকা (যেমন: ধানমন্ডি):")
         
-    if st.button("ডোনার খুঁজুন 🔍"):
-        st.success(f"✅ {selected_district}-এ {bg} গ্রুপের ডোনার পাওয়া গেছে:")
-        st.markdown("""
-        * **আব্দুর রহমান** - 017XXXXXXXX
-        * **কামাল হোসেন** - 019XXXXXXXX
-        * **হাসান মাহমুদ** - 018XXXXXXXX
-        """)
-        st.caption("গোপনীয়তার স্বার্থে নাম্বার হাইড করা হয়েছে (ডেমো)")
+        if st.button("ডোনার খুঁজুন 🔍"):
+            st.success(f"✅ {bg} গ্রুপের ডোনার পাওয়া গেছে:")
+            st.markdown("""
+            1. **রাফি আহমেদ** - 017XXXXXXXX
+            2. **কামাল হোসেন** - 019XXXXXXXX
+            3. **সুমন খান** - 018XXXXXXXX
+            """)
+            st.caption("*গোপনীয়তার স্বার্থে নাম্বার লুকানো (ডেমো)*")
