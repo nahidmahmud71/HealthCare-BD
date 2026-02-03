@@ -1,405 +1,354 @@
 import streamlit as st
-import pandas as pd
-import requests
-from streamlit_lottie import st_lottie
 import time
-import folium
-from streamlit_folium import folium_static
 
-# ================= 1. PAGE CONFIGURATION =================
+# -----------------------------------------------------------------------------
+# 1. PAGE CONFIGURATION & STYLING (SETUP)
+# -----------------------------------------------------------------------------
 st.set_page_config(
-    page_title="HealthPlus BD",
-    page_icon="🏥",
+    page_title="Medical Health Companion",
+    page_icon="🩺",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# ================= 2. CSS STYLING (DARK GALAXY) =================
+# Custom CSS to make the App look "Advanced"
 st.markdown("""
-<style>
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap');
-    
-    /* BACKGROUND ANIMATION */
-    @keyframes galaxy {
-        0% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-        100% { background-position: 0% 50%; }
+    <style>
+    /* Main Background color update */
+    .main {
+        background-color: #f8f9fa;
     }
     
-    [data-testid="stAppViewContainer"] {
-        background: linear-gradient(-45deg, #020024, #090979, #00d4ff, #000000);
-        background-size: 400% 400%;
-        animation: galaxy 15s ease infinite;
-        color: white;
-        font-family: 'Poppins', sans-serif;
-    }
-
-    /* SIDEBAR */
-    [data-testid="stSidebar"] {
-        background-color: rgba(0, 10, 30, 0.95);
-        border-right: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    [data-testid="stSidebar"] * { color: white !important; }
-
-    /* CARD DESIGN (GLASS + FLOATING) */
-    @keyframes float {
-        0% { transform: translateY(0px); }
-        50% { transform: translateY(-5px); }
-        100% { transform: translateY(0px); }
-    }
-    
-    .feature-card, .doc-card, .hosp-card, .sym-card, .amb-card {
-        background: rgba(255, 255, 255, 0.08);
-        backdrop-filter: blur(12px);
+    /* Custom Box Styles */
+    .info-box {
         padding: 20px;
-        border-radius: 20px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+        background-color: #e3f2fd;
+        border-left: 5px solid #2196f3;
+        border-radius: 8px;
         margin-bottom: 20px;
-        transition: 0.3s;
-        animation: float 6s ease-in-out infinite;
+        color: #0d47a1;
     }
     
-    .feature-card:hover, .doc-card:hover {
-        background: rgba(255, 255, 255, 0.15);
-        transform: scale(1.02);
-        border-color: #00d4ff;
+    .warning-box {
+        padding: 20px;
+        background-color: #fff3e0;
+        border-left: 5px solid #ff9800;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        color: #e65100;
+    }
+    
+    .success-box {
+        padding: 20px;
+        background-color: #e8f5e9;
+        border-left: 5px solid #4caf50;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        color: #1b5e20;
     }
 
-    /* TEXT COLORS */
-    h1, h2, h3, h4, h5, p, span, div, label, li { color: white !important; }
-    .highlight { color: #00d4ff !important; font-weight: bold; }
-    .warning { color: #ff6b6b !important; font-weight: bold; }
-
-    /* BUTTONS */
+    /* Button Styling */
     .stButton>button {
-        background: linear-gradient(90deg, #00d4ff, #005bea);
-        color: white !important;
-        border: none;
-        border-radius: 50px;
-        padding: 10px 20px;
-        font-weight: bold;
         width: 100%;
-        transition: 0.3s;
+        border-radius: 8px;
+        height: 3em;
+        background-color: #007bff;
+        color: white;
+        font-weight: bold;
     }
     .stButton>button:hover {
-        transform: scale(1.05);
-        box-shadow: 0 0 20px rgba(0, 212, 255, 0.6);
+        background-color: #0056b3;
     }
-</style>
+    
+    /* Headers */
+    h1, h2, h3 {
+        font-family: 'Arial', sans-serif;
+        color: #2c3e50;
+    }
+    </style>
 """, unsafe_allow_html=True)
 
-# ================= 3. SPLASH SCREEN =================
-if 'splash_shown' not in st.session_state:
-    st.session_state.splash_shown = False
+# -----------------------------------------------------------------------------
+# 2. LOGIC & DATA (BACKEND)
+# -----------------------------------------------------------------------------
 
-if not st.session_state.splash_shown:
+def calculate_bmi(weight, height_m):
+    return weight / (height_m ** 2)
+
+def get_diet_plan(category):
+    """
+    Returns a detailed diet plan based on BMI category.
+    This fulfills the 'Khabar list' requirement.
+    """
+    if category == "Underweight (ওজন কম)":
+        return {
+            "Advice": "আপনার ওজন বাড়ানো প্রয়োজন। প্রোটিন ও কার্বোহাইড্রেট যুক্ত খাবার বেশি খান।",
+            "Breakfast": "২টি ডিম (কুসুমসহ), ২ পিস বাটার টোস্ট/পরোটা, ১ গ্লাস ঘন দুধ ও কলা।",
+            "Lunch": "ভরা পেটে ভাত, আলু ভর্তা/সবজি, রুই/কাতল মাছ বা মুরগির মাংস, ঘন ডাল।",
+            "Snack": "এক মুঠো বাদাম (Almonds/Peanuts), ফলের জুস বা দই।",
+            "Dinner": "ভাতের সাথে মাছ/মাংস অথবা ৩টি রুটি ও সবজি। শোয়ার আগে ১ গ্লাস দুধ।"
+        }
+    elif category == "Normal Weight (স্বাভাবিক)":
+        return {
+            "Advice": "আপনার ওজন ঠিক আছে। এটি ধরে রাখতে সুষম খাবার খান এবং পানি পান করুন।",
+            "Breakfast": "ওটমিল/কর্নফ্লেক্স অথবা ১টি ডিম ও ২টি রুটি, সাথে মৌসুমি ফল।",
+            "Lunch": "পরিমাণমতো ভাত (দেড় কাপ), মিক্সড সবজি, এক টুকরো মাছ/মাংস, পাতলা ডাল।",
+            "Snack": "গ্রিন টি, বিস্কুট, অথবা একটি আপেল/পেয়ারা।",
+            "Dinner": "হালকা খাবার - ২টা রুটি ও সবজি বা সুপ। রাতে ভারী খাবার এড়িয়ে চলুন।"
+        }
+    else: # Overweight/Obese
+        return {
+            "Advice": "ওজন কমানো প্রয়োজন। শর্করা (Rice/Sugar) কমান এবং ফাইবার (Vegetables) বাড়ান।",
+            "Breakfast": "চিনি ছাড়া গ্রিন টি/লেবু পানি, ২টা ডিমের সাদা অংশ, ১টা রুটি, শসা।",
+            "Lunch": "অল্প লাল চালের ভাত (এক কাপ), প্রচুর সালাদ, সবজি, ছোট মাছ বা গ্রিল চিকেন।",
+            "Snack": "শসা, গাজর, অথবা সুগার-ফ্রি বিস্কুট। ভাজাপোড়া খাবেন না।",
+            "Dinner": "সবজির ক্লিয়ার সুপ বা ১টা রুটি ও সবজি। রাত ৮টার মধ্যে ডিনার শেষ করুন।"
+        }
+
+# -----------------------------------------------------------------------------
+# 3. SIDEBAR NAVIGATION (ADVANCED MENU)
+# -----------------------------------------------------------------------------
+st.sidebar.image("https://cdn-icons-png.flaticon.com/512/2966/2966327.png", width=80)
+st.sidebar.title("Health Companion")
+st.sidebar.caption("Your Personal Care Assistant")
+st.sidebar.markdown("---")
+
+# Using Radio button for clean navigation
+menu_selection = st.sidebar.radio(
+    "মেনু নির্বাচন করুন:",
+    ["🏠 হোম (Home)", "📊 বিএমআই ও ডায়েট (BMI)", "💊 প্রাথমিক চিকিৎসা (Guide)", "🚑 ইমার্জেন্সি (Emergency)"]
+)
+
+st.sidebar.markdown("---")
+st.sidebar.info("⚠️ **Disclaimer:** This app provides general advice. Always consult a doctor for serious conditions.")
+
+# -----------------------------------------------------------------------------
+# 4. MAIN PAGE CONTENT
+# -----------------------------------------------------------------------------
+
+# === HOME PAGE ===
+if menu_selection == "🏠 হোম (Home)":
+    st.title("Welcome to Medical Health Companion 👋")
+    st.markdown("### আপনার সুস্থতার বিশ্বস্ত সঙ্গী")
+    
+    # Feature Highlights
     st.markdown("""
-    <div style="height:90vh; display:flex; flex-direction:column; justify-content:center; align-items:center;">
-        <h1 style="font-size:3.5rem; background:linear-gradient(to right, #00c6ff, #0072ff); -webkit-background-clip:text; -webkit-text-fill-color:transparent; text-transform:uppercase; margin-bottom:10px;">MD NAHID MAHMUD</h1>
-        <h2 style="color:white;">Southeast University</h2>
-        <p style="color:#aaa; font-style:italic;">Former Student: Cantonment College Jashore</p>
+    <div class="info-box">
+        <h3>কেন এই অ্যাপটি ব্যবহার করবেন?</h3>
+        <ul>
+            <li><b>BMI চেক:</b> আপনার ওজন ঠিক আছে কিনা জানুন।</li>
+            <li><b>ডায়েট চার্ট:</b> শরীরের অবস্থা অনুযায়ী খাবারের তালিকা।</li>
+            <li><b>ঘরোয়া চিকিৎসা:</b> জ্বর, ঠান্ডা বা সাধারণ সমস্যার সমাধান।</li>
+            <li><b>জরুরী সেবা:</b> এম্বুলেন্স ও হাসপাতালের তথ্য।</li>
+        </ul>
     </div>
     """, unsafe_allow_html=True)
-    time.sleep(4)
-    st.session_state.splash_shown = True
-    st.rerun()
 
-# ================= 4. ASSETS & DATA =================
-@st.cache_data
-def load_lottie(url):
-    try:
-        r = requests.get(url)
-        if r.status_code != 200: return None
-        return r.json()
-    except: return None
-
-# Animations
-anim_home = load_lottie("https://assets10.lottiefiles.com/packages/lf20_pnycZg.json")
-anim_doc = load_lottie("https://assets10.lottiefiles.com/packages/lf20_5njp3vgg.json")
-anim_amb = load_lottie("https://assets9.lottiefiles.com/packages/lf20_z4cshyhf.json")
-anim_symptom = load_lottie("https://lottie.host/58819173-0740-4a80-9646-7a8311145491/6S5u5Q0D32.json")
-anim_bmi = load_lottie("https://assets2.lottiefiles.com/packages/lf20_wopcsux6.json")
-
-# Data Loading
-ALL_DISTRICTS = sorted([
-    "Bagerhat", "Bandarban", "Barguna", "Barisal", "Bhola", "Bogra", "Brahmanbaria", "Chandpur", 
-    "Chapainawabganj", "Chittagong", "Chuadanga", "Comilla", "Cox's Bazar", "Dhaka", "Dinajpur", 
-    "Faridpur", "Feni", "Gaibandha", "Gazipur", "Gopalganj", "Habiganj", "Jamalpur", "Jessore", 
-    "Jhalokati", "Jhenaidah", "Joypurhat", "Khagrachari", "Khulna", "Kishoreganj", "Kurigram", 
-    "Kushtia", "Lakshmipur", "Lalmonirhat", "Madaripur", "Magura", "Manikganj", "Meherpur", 
-    "Moulvibazar", "Munshiganj", "Mymensingh", "Naogaon", "Narail", "Narayanganj", "Narsingdi", 
-    "Natore", "Netrokona", "Nilphamari", "Noakhali", "Pabna", "Panchagarh", "Patuakhali", 
-    "Pirojpur", "Rajbari", "Rajshahi", "Rangamati", "Rangpur", "Satkhira", "Shariatpur", 
-    "Sherpur", "Sirajganj", "Sunamganj", "Sylhet", "Tangail", "Thakurgaon"
-])
-
-@st.cache_data
-def load_data():
-    try: df_h = pd.read_csv("hospitals_64.csv")
-    except: df_h = pd.DataFrame(columns=["District"])
-    try: df_d = pd.read_csv("doctors_64.csv")
-    except: df_d = pd.DataFrame(columns=["District"])
-    try: df_a = pd.read_csv("ambulances_64.csv")
-    except: df_a = pd.DataFrame(columns=["District"])
-    return df_h, df_d, df_a
-
-df_h, df_d, df_a = load_data()
-
-# ================= 5. SIDEBAR =================
-with st.sidebar:
-    st.image("https://cdn-icons-png.flaticon.com/512/3063/3063205.png", width=80)
-    st.markdown("### HealthPlus BD")
-    st.divider()
-    selected_district = st.selectbox("📍 জেলা:", ALL_DISTRICTS, index=ALL_DISTRICTS.index("Dhaka"))
-    st.write("")
-    menu = st.radio("মেনু:", ["🏠 হোম পেজ", "🤒 প্রাথমিক চিকিৎসা", "🏥 হাসপাতাল", "👨‍⚕️ ডাক্তার", "🚑 অ্যাম্বুলেন্স", "📊 BMI ও ডায়েট"])
-    st.divider()
-    st.info("জরুরী: 999")
-
-# ================= 6. MAIN CONTENT =================
-
-# --- HOME ---
-if menu == "🏠 হোম পেজ":
-    st.markdown("<h1 style='text-align:center; color:#00d4ff !important;'>HealthPlus Bangladesh</h1>", unsafe_allow_html=True)
-    st.markdown(f"<p style='text-align:center;'>জেলা: <b class='highlight'>{selected_district}</b> | স্মার্ট স্বাস্থ্য সেবা</p>", unsafe_allow_html=True)
-    
-    c1, c2 = st.columns([1.2, 0.8])
+    c1, c2 = st.columns(2)
     with c1:
-        st.write("### 👋 স্বাগতম!")
-        st.write("আপনার জেলার সকল ইমার্জেন্সি স্বাস্থ্যসেবা এখন এক ক্লিকে।")
-        
-        # Count Data
-        h_cnt = len(df_h[df_h['District'] == selected_district])
-        d_cnt = len(df_d[df_d['District'] == selected_district])
-        
-        s1, s2 = st.columns(2)
-        with s1: st.markdown(f"<div class='feature-card'><h1 class='highlight'>{h_cnt}</h1><p>হাসপাতাল</p></div>", unsafe_allow_html=True)
-        with s2: st.markdown(f"<div class='feature-card'><h1 class='highlight'>{d_cnt}</h1><p>ডাক্তার</p></div>", unsafe_allow_html=True)
-
+        st.image("https://img.freepik.com/free-vector/health-professional-team-concept-illustration_114360-1618.jpg", caption="Stay Healthy", use_container_width=True)
     with c2:
-        if anim_home: st_lottie(anim_home, height=250)
+        st.subheader("💡 আজকের টিপস")
+        st.success("প্রতিদিন অন্তত ৮ গ্লাস পানি পান করুন। এটি আপনার শরীরকে ডিহাইড্রেশন থেকে বাঁচায় এবং ত্বক ভালো রাখে।")
+        st.warning("রাতে অন্তত ৭-৮ ঘণ্টা ঘুমানোর চেষ্টা করুন। ঘুম শরীরকে রিচার্জ করতে সাহায্য করে।")
+
+# === BMI & DIET PAGE ===
+elif menu_selection == "📊 বিএমআই ও ডায়েট (BMI)":
+    st.title("BMI Calculator & Diet Plan")
+    st.write("আপনার উচ্চতা ও ওজন দিয়ে শরীরের সঠিক অবস্থা এবং খাবারের তালিকা জানুন।")
+    
+    col1, col2 = st.columns([1, 2])
+    
+    with col1:
+        st.markdown("### 📝 তথ্য দিন")
+        weight = st.number_input("ওজন (Weight in kg)", min_value=10.0, max_value=200.0, value=60.0)
+        height_m = st.number_input("উচ্চতা (Height in meters)", min_value=0.5, max_value=2.5, value=1.70)
+        
+        calc_btn = st.button("হিসাব করুন (Calculate)")
+        
+        if calc_btn:
+            bmi = calculate_bmi(weight, height_m)
+            st.session_state['bmi_score'] = bmi
+            
+            # Determine Category
+            if bmi < 18.5:
+                cat = "Underweight (ওজন কম)"
+                color = "blue"
+            elif 18.5 <= bmi < 24.9:
+                cat = "Normal Weight (স্বাভাবিক)"
+                color = "green"
+            elif 25 <= bmi < 29.9:
+                cat = "Overweight (ওজন বেশি)"
+                color = "orange"
+            else:
+                cat = "Obese (স্থূলতা)"
+                color = "red"
+            
+            st.session_state['bmi_cat'] = cat
+            st.session_state['bmi_color'] = color
+
+    with col2:
+        if 'bmi_score' in st.session_state:
+            bmi = st.session_state['bmi_score']
+            cat = st.session_state['bmi_cat']
+            color = st.session_state['bmi_color']
+            
+            # Result Display
+            st.markdown(f"""
+            <div style="text-align:center; padding:15px; border: 2px solid {color}; border-radius:10px;">
+                <h2 style="color:{color};">BMI: {bmi:.2f}</h2>
+                <h3 style="color:{color};">{cat}</h3>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Progress Bar Logic
+            progress_val = min(bmi / 40, 1.0)
+            st.progress(progress_val)
+            
+            # Diet Plan Section
+            st.markdown("---")
+            st.subheader(f"🥗 আপনার ডায়েট চার্ট ({cat})")
+            
+            diet = get_diet_plan(cat)
+            
+            st.info(f"📌 **পরামর্শ:** {diet['Advice']}")
+            
+            # Tabs for neat organization
+            tab1, tab2, tab3 = st.tabs(["🍳 সকাল (Breakfast)", "🍛 দুপুর (Lunch)", "🍲 রাত (Dinner)"])
+            
+            with tab1:
+                st.write(f"**মেনু:** {diet['Breakfast']}")
+            with tab2:
+                st.write(f"**মেনু:** {diet['Lunch']}")
+            with tab3:
+                st.write(f"**মেনু:** {diet['Dinner']}")
+                st.caption("*রাতে ঘুমানোর ২ ঘণ্টা আগে খাবার শেষ করার চেষ্টা করুন।*")
+
+# === HEALTH GUIDE PAGE ===
+elif menu_selection == "💊 প্রাথমিক চিকিৎসা (Guide)":
+    st.title("Common Health Issues & Solutions")
+    st.write("সাধারণ রোগের লক্ষণ, করণীয় এবং ঘরোয়া প্রতিকার।")
+
+    # Advanced Dropdown
+    issue = st.selectbox(
+        "সমস্যা নির্বাচন করুন:",
+        ["জ্বর (Fever)", "সর্দি ও কাশি (Cold)", "গ্যাস্ট্রিক/এসিডিটি", "মাথাব্যথা (Headache)", "পানিশূন্যতা (Dehydration)"]
+    )
+
+    if issue == "জ্বর (Fever)":
+        st.markdown("## 🤒 জ্বরের ঘরোয়া চিকিৎসা")
+        st.markdown("""
+        <div class="info-box">
+        <b>জ্বর কী?</b> শরীরের তাপমাত্রা স্বাভাবিকের (৯৮.৬°F) চেয়ে বেড়ে যাওয়া। এটি কোনো রোগের লক্ষণ, রোগ নয়।
+        </div>
+        """, unsafe_allow_html=True)
+        
+        c1, c2 = st.columns(2)
+        with c1:
+            st.markdown("### ✅ করণীয় (Do's)")
+            st.markdown("""
+            * **বিশ্রাম:** শরীরকে পর্যাপ্ত বিশ্রাম দিন।
+            * **জলপট্টি:** কপালে কুসুম গরম বা স্বাভাবিক পানির পট্টি দিন।
+            * **তরল খাবার:** স্যুপ, ডাবের পানি, বা ফলের রস প্রচুর পরিমাণে পান করুন।
+            * **পোশাক:** হালকা সুতি কাপড় পরুন।
+            """)
+        with c2:
+            st.markdown("### ❌ বর্জনীয় (Don'ts)")
+            st.markdown("""
+            * গায়ে কাঁথা বা কম্বল জড়িয়ে রাখবেন না।
+            * বরফ বা খুব ঠান্ডা পানি ব্যবহার করবেন না।
+            * চিকিৎসকের পরামর্শ ছাড়া অ্যান্টিবায়োটিক খাবেন না।
+            """)
+        
+        st.markdown("### 🚑 কখন ডাক্তার দেখাবেন?")
+        st.warning("যদি জ্বর ১০৩°F এর বেশি হয়, শ্বাসকষ্ট হয়, অথবা ৩ দিনের বেশি স্থায়ী হয়।")
+
+    elif issue == "সর্দি ও কাশি (Cold)":
+        st.markdown("## 🤧 সর্দি ও কাশির প্রতিকার")
+        st.success("ভাইরাসজনিত সর্দি-কাশি সাধারণত ৭-১০ দিনে সেরে যায়।")
+        
+        st.markdown("### ✅ ঘরোয়া টোটকা")
+        st.markdown("""
+        1. **গরম ভাপ (Steam):** গরম পানিতে মেন্থল দিয়ে ভাপ নিলে নাক পরিষ্কার হয়।
+        2. **আদা-চা:** আদা, লেবু ও মধু মিশিয়ে কুসুম গরম পানি বা চা পান করুন।
+        3. **গড়গড়া:** কুসুম গরম পানিতে লবণ দিয়ে দিনে ৩-৪ বার গার্গল করুন।
+        4. **তুলসি পাতা:** তুলসি পাতার রস ও মধু মিশিয়ে খাওয়া খুব উপকারী।
+        """)
+
+    elif issue == "গ্যাস্ট্রিক/এসিডিটি":
+        st.markdown("## 🔥 গ্যাস্ট্রিক বা এসিডিটি সমস্যা")
+        st.markdown("""
+        <div class="warning-box">
+        দীর্ঘদিন গ্যাস্ট্রিক থাকলে আলসার হতে পারে। নিয়ম মেনে চলা জরুরি।
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("### ✅ সমাধান")
+        st.write("🔹 **তাৎক্ষণিক আরাম:** এক গ্লাস ঠান্ডা দুধ (চিনি ছাড়া) অথবা ডাবের পানি পান করুন।")
+        st.write("🔹 **খাবার:** অল্প করে বারবার খান। ভাজাপোড়া এবং অতিরিক্ত ঝাল এড়িয়ে চলুন।")
+        st.write("🔹 **হাঁটা:** খাওয়ার পর সাথে সাথে না শুয়ে ১০-১৫ মিনিট হাঁটুন।")
+
+    elif issue == "মাথাব্যথা (Headache)":
+        st.markdown("## 🤯 মাথাব্যথার কারণ ও প্রতিকার")
+        st.info("বেশিরভাগ মাথাব্যথা টেনশন, কম ঘুম অথবা ডিহাইড্রেশনের কারণে হয়।")
+        st.markdown("""
+        * **পানি পান করুন:** প্রথমেই ১-২ গ্লাস পানি পান করুন।
+        * **বিশ্রাম:** অন্ধকার ও শান্ত ঘরে চোখ বন্ধ করে শুয়ে থাকুন।
+        * **চা/কফি:** আদা চা বা কফি ব্যথা কমাতে সাহায্য করতে পারে।
+        * **ম্যাসাজ:** কপালে বা ঘাড়ে হালকা ম্যাসাজ করুন।
+        """)
+
+    elif issue == "পানিশূন্যতা (Dehydration)":
+        st.markdown("## 💧 পানিশূন্যতা বা ডিহাইড্রেশন")
+        st.markdown("### ✅ লক্ষণ")
+        st.write("- মুখ ও ঠোঁট শুকিয়ে যাওয়া, প্রস্রাবের রং হলুদ হওয়া, মাথা ঘোরা।")
+        
+        st.markdown("### ✅ প্রতিকার")
+        st.markdown("""
+        * **খাবার স্যালাইন (ORS):** আধা লিটার পানিতে এক প্যাকেট স্যালাইন মিশিয়ে পান করুন।
+        * **ডাবের পানি:** এতে প্রচুর ইলেকট্রোলাইট থাকে।
+        * **ফলের রস:** তরমুজ বা কমলার রস পান করুন।
+        """)
+
+# === EMERGENCY PAGE ===
+elif menu_selection == "🚑 ইমার্জেন্সি (Emergency)":
+    st.title("Emergency Contacts (Bangladesh)")
+    st.markdown("বিপদের সময় নিচের নম্বরগুলোতে যোগাযোগ করুন।")
+
+    # Creating Cards for Numbers
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        st.error("🚨 **National Help Desk**")
+        st.metric(label="Ambulance/Police/Fire", value="999")
+    
+    with col2:
+        st.warning("👩‍⚕️ **Health Advice**")
+        st.metric(label="Shastho Batayon", value="16263")
+        
+    with col3:
+        st.info("👶 **Women & Children**")
+        st.metric(label="Emergency Helpline", value="109")
 
     st.markdown("---")
-    # Quick Links Grid
-    col1, col2, col3, col4 = st.columns(4)
-    with col1: st.markdown("<div class='feature-card'><h1>🤒</h1><h4>Symptom</h4></div>", unsafe_allow_html=True)
-    with col2: st.markdown("<div class='feature-card'><h1>👨‍⚕️</h1><h4>Doctor</h4></div>", unsafe_allow_html=True)
-    with col3: st.markdown("<div class='feature-card'><h1>🚑</h1><h4>Ambulance</h4></div>", unsafe_allow_html=True)
-    with col4: st.markdown("<div class='feature-card'><h1>📊</h1><h4>Diet Plan</h4></div>", unsafe_allow_html=True)
-
-# --- SYMPTOM CHECKER (DETAILED) ---
-elif menu == "🤒 প্রাথমিক চিকিৎসা":
-    st.markdown("## 🤒 বিস্তারিত প্রাথমিক চিকিৎসা")
+    st.markdown("### 🏥 হাসপাতালে যাওয়ার চেকলিস্ট")
     
-    c1, c2 = st.columns([1, 2])
-    with c1: 
-        if anim_symptom: st_lottie(anim_symptom, height=200)
-    with c2:
-        symptom = st.selectbox("কোন সমস্যাটি হচ্ছে?", 
-            ["বাছাই করুন...", "জ্বর (Fever)", "ঠান্ডা/সর্দি", "গ্যাস্ট্রিক", "মাথা ব্যথা", "শরীরে কাটা", "পুড়ে যাওয়া", "ডায়রিয়া", "উচ্চ রক্তচাপ"]
-        )
-
-    if symptom != "বাছাই করুন...":
-        st.markdown(f"### 🩺 পরামর্শ: <span class='highlight'>{symptom}</span>", unsafe_allow_html=True)
-        
-        # Dictionary Data
-        data = {
-            "জ্বর (Fever)": {
-                "med": "প্যারাসিটামল (Napa/Ace) ৫০০ মিগ্রা। প্রাপ্তবয়স্কদের জন্য দিনে ৩ বার খাওয়ার পর।",
-                "food": "পাতলা স্যুপ, ফলের রস, জাউভাত।",
-                "avoid": "ঠান্ডা পানি, আইসক্রিম, ভাজাপোড়া।",
-                "warn": "জ্বর ১০৩° এর বেশি হলে বা ৩ দিনের বেশি থাকলে ডাক্তার দেখান।"
-            },
-            "ঠান্ডা/সর্দি": {
-                "med": "অ্যান্টিহিস্টামিন (Fexo 120mg) রাতে ১টি। নাক বন্ধ থাকলে Antazol ড্রপ।",
-                "food": "আদা চা, মধু, গরম পানি, লেবু।",
-                "avoid": "ঠান্ডা বাতাস, ধুমপান।",
-                "warn": "শ্বাসকষ্ট হলে বা বুকে কফ জমে গেলে দ্রুত ডাক্তার দেখান।"
-            },
-            "গ্যাস্ট্রিক": {
-                "med": "এন্টাসিড সিরাপ ২ চামচ অথবা ওমিপ্রাজল (Seclo 20mg) খাওয়ার আগে।",
-                "food": "শসা, ডাবের পানি, ঠান্ডা দুধ, পেঁপে।",
-                "avoid": "ঝাল, মশলাদার খাবার, খালি পেটে থাকা।",
-                "warn": "বুকে তীব্র ব্যথা হলে (যা পিঠে ছড়ায়) হার্ট অ্যাটাক হতে পারে।"
-            },
-            "মাথা ব্যথা": {
-                "med": "প্যারাসিটামল (Napa Extra) অথবা Tufnil (মাইগ্রেন হলে)।",
-                "food": "বাদাম, পানি, ম্যাগনেসিয়াম সমৃদ্ধ খাবার।",
-                "avoid": "মোবাইল স্ক্রিন, কড়া রোদ, অনিদ্রা।",
-                "warn": "বমি বা চোখে ঝাপসা দেখলে নিউরোলোজিস্ট দেখান।"
-            },
-            "শরীরে কাটা": {
-                "med": "স্যাভলন বা Povidone Iodine দিয়ে পরিষ্কার করুন।",
-                "food": "প্রোটিন যুক্ত খাবার (ডিম, মাছ)।",
-                "avoid": "কাটা স্থানে পানি লাগানো।",
-                "warn": "রক্তপাত ১০ মিনিটের বেশি হলে সেলাই লাগতে পারে।"
-            },
-            "পুড়ে যাওয়া": {
-                "med": "সিলভারজিন ক্রিম বা বার্নল মলম লাগান।",
-                "food": "ভিটামিন সি যুক্ত ফল।",
-                "avoid": "বরফ ঘষা, টুথপেস্ট লাগানো।",
-                "warn": "ফোসকা গলিয়ে দেবেন না। কাপড় চামড়ায় লেগে গেলে হাসপাতালে যান।"
-            },
-            "ডায়রিয়া": {
-                "med": "খাওয়ার স্যালাইন (Orsaline-N) প্রতিবার পায়খানার পর। জিংক ট্যাবলেট।",
-                "food": "জাউভাত, কাঁচাকলা ভর্তা।",
-                "avoid": "দুধ, শাক, বাইরের খাবার।",
-                "warn": "প্রস্রাব ৬ ঘণ্টার বেশি বন্ধ থাকলে হাসপাতালে স্যালাইন দিতে হবে।"
-            },
-            "উচ্চ রক্তচাপ": {
-                "med": "ডাক্তারের পরামর্শ ছাড়া ঔষধ খাবেন না। তাৎক্ষণিক বিশ্রামে যান।",
-                "food": "টক দই, লেবু, রসুন।",
-                "avoid": "লবণ, গরুর মাংস, টেনশন।",
-                "warn": "ঘাড় ব্যথা বা বুকে চাপ অনুভব করলে হাসপাতালে যান।"
-            }
-        }
-        
-        info = data.get(symptom, {})
-        
-        # Tabs for details
-        t1, t2, t3, t4 = st.tabs(["💊 ঔষধ", "🍲 খাবার", "🚫 বর্জনীয়", "🚨 সতর্কতা"])
-        with t1: st.markdown(f"<div class='sym-card'><h4>প্রাথমিক ঔষধ</h4><p>{info.get('med')}</p></div>", unsafe_allow_html=True)
-        with t2: st.markdown(f"<div class='sym-card'><h4>কী খাবেন</h4><p>{info.get('food')}</p></div>", unsafe_allow_html=True)
-        with t3: st.markdown(f"<div class='sym-card'><h4>কী খাবেন না</h4><p>{info.get('avoid')}</p></div>", unsafe_allow_html=True)
-        with t4: st.markdown(f"<div class='sym-card' style='border-color:#ff6b6b;'><h4 class='warning'>সতর্কতা</h4><p>{info.get('warn')}</p></div>", unsafe_allow_html=True)
-
-# --- HOSPITAL ---
-elif menu == "🏥 হাসপাতাল":
-    st.markdown(f"## 🏥 {selected_district}-এর হাসপাতাল")
-    filtered_hosp = df_h[df_h['District'] == selected_district]
-    
-    if not filtered_hosp.empty:
-        tab1, tab2 = st.tabs(["তালিকা", "ম্যাপ"])
-        with tab1:
-            for _, row in filtered_hosp.iterrows():
-                st.markdown(f"""
-                <div class="hosp-card">
-                    <div style="display:flex; justify-content:space-between;">
-                        <div><h3>{row['Name']}</h3><p style="color:#ccc;">📍 {row['Location']}</p></div>
-                        <a href="tel:{row['Phone']}"><button>📞 কল করুন</button></a>
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
-        with tab2:
-            avg_lat = filtered_hosp['Lat'].mean()
-            avg_lon = filtered_hosp['Lon'].mean()
-            m = folium.Map(location=[avg_lat, avg_lon], zoom_start=13)
-            for _, row in filtered_hosp.iterrows():
-                folium.Marker([row['Lat'], row['Lon']], popup=row['Name'], icon=folium.Icon(color="red", icon="plus-sign")).add_to(m)
-            folium_static(m)
-    else:
-        st.warning("তথ্য আপডেট করা হচ্ছে...")
-
-# --- DOCTOR ---
-elif menu == "👨‍⚕️ ডাক্তার":
-    st.markdown(f"## 👨‍⚕️ {selected_district}-এর ডাক্তার")
-    
-    c1, c2 = st.columns([2, 1])
-    with c2: 
-        if anim_doc: st_lottie(anim_doc, height=150)
-    
-    filtered_docs = df_d[df_d['District'] == selected_district]
-    if not filtered_docs.empty:
-        specs = ["সকল"] + sorted(filtered_docs['Specialty'].unique().tolist())
-        choice = st.selectbox("বিভাগ:", specs)
-        if choice != "সকল": filtered_docs = filtered_docs[filtered_docs['Specialty'] == choice]
-        
-        st.write("")
-        cols = st.columns(2)
-        for i, (index, row) in enumerate(filtered_docs.iterrows()):
-            with cols[i % 2]:
-                st.markdown(f"""
-                <div class="doc-card" style="border-left: 5px solid #00d4ff;">
-                    <h3 style="margin:0;">{row['Name']}</h3>
-                    <span class="highlight">{row['Specialty']}</span>
-                    <p>🏥 {row['Hospital']}</p>
-                    <a href="tel:{row['Phone']}"><button style="margin-top:10px;">📞 অ্যাপয়েন্টমেন্ট</button></a>
-                </div>
-                """, unsafe_allow_html=True)
-
-# --- AMBULANCE ---
-elif menu == "🚑 অ্যাম্বুলেন্স":
-    st.markdown("## 🚑 অ্যাম্বুলেন্স সার্ভিস")
-    
-    c1, c2 = st.columns([1, 1])
-    with c1: 
-        if anim_amb: st_lottie(anim_amb, height=200)
-    with c2:
+    with st.expander("হাসপাতালে যাওয়ার আগে কী কী সাথে নেবেন? (ক্লিক করুন)"):
         st.markdown("""
-        <div class="feature-card" style="border-left:5px solid #ff6b6b;">
-            <h3 class="warning">⚠️ কল করার চেকলিস্ট:</h3>
-            <ul>
-                <li>রোগীর বর্তমান অবস্থা (অজ্ঞান/রক্তপাত/হার্ট অ্যাটাক)</li>
-                <li>সঠিক লোকেশন ও ল্যান্ডমার্ক</li>
-                <li>রোগীর বয়স ও জেন্ডার</li>
-            </ul>
-        </div>
-        """, unsafe_allow_html=True)
+        - [ ] **রোগীর এনআইডি (NID) কার্ড**
+        - [ ] **ডাক্তারের আগের প্রেসক্রিপশন (যদি থাকে)**
+        - [ ] **নগদ টাকা (Cash) ও ডেবিট/ক্রেডিট কার্ড**
+        - [ ] **মোবাইল ফোন ও চার্জার**
+        - [ ] **পানির বোতল ও শুকনো খাবার**
+        - [ ] **রোগীর নিয়মিত খাওয়ার ওষুধ**
+        """)
 
-    filtered_amb = df_a[(df_a['District'] == selected_district) | (df_a['District'] == 'All BD')]
-    for _, row in filtered_amb.iterrows():
-        st.markdown(f"""
-        <div class="amb-card" style="display:flex; justify-content:space-between; align-items:center;">
-            <div><h3>{row['ServiceName']}</h3><h2 class="warning">{row['Contact']}</h2></div>
-            <a href="tel:{row['Contact']}"><button style="background:#ff6b6b; width:auto;">📞 কল করুন</button></a>
-        </div>
-        """, unsafe_allow_html=True)
-
-# --- BMI & DIET ---
-elif menu == "📊 BMI ও ডায়েট":
-    st.markdown("## 📊 ফিটনেস চেক ও ডায়েট")
-    
-    c_anim, c_in = st.columns([1, 2])
-    with c_anim: 
-        if anim_bmi: st_lottie(anim_bmi, height=200)
-    
-    with c_in:
-        weight = st.number_input("ওজন (kg):", 30.0, 150.0, 60.0)
-        c1, c2 = st.columns(2)
-        with c1: feet = st.number_input("উচ্চতা (ফুট):", 2, 8, 5)
-        with c2: inch = st.number_input("ইঞ্চি:", 0, 11, 6)
-        calc = st.button("হিসাব করুন ও চার্ট দেখুন 🥗")
-
-    if calc:
-        h_m = ((feet*12)+inch)*0.0254
-        bmi = weight/(h_m**2)
-        
-        status, color, diet = "", "", ""
-        if bmi < 18.5:
-            status = "ওজন কম (Underweight)"
-            color = "#f0ad4e"
-            diet = """
-            * **সকাল:** ২টা ডিম, ২টা রুটি, ১ গ্লাস দুধ, কলা।
-            * **দুপুর:** মুরগির মাংস/মাছ, ঘন ডাল, বেশি করে ভাত, সবজি।
-            * **বিকাল:** বাদাম, দই, ফলের রস।
-            * **রাত:** ১ গ্লাস দুধ, খেজুর, রুটি/ভাত।
-            """
-        elif 18.5 <= bmi < 24.9:
-            status = "সুস্বাস্থ্য (Healthy)"
-            color = "#5cb85c"
-            diet = """
-            * **সকাল:** ১টা রুটি/ওটস, সবজি, ১টা ডিম।
-            * **দুপুর:** ১ কাপ ভাত, মাছ/মাংস, সালাদ, ডাল।
-            * **বিকাল:** গ্রিন টি, বিস্কুট।
-            * **রাত:** হালকা খাবার, সুপ বা রুটি।
-            """
-        else:
-            status = "ওজন বেশি (Overweight)"
-            color = "#d9534f"
-            diet = """
-            * **সকাল:** ওটস/লাল আটার রুটি (চিনি ছাড়া), গ্রিন টি।
-            * **দুপুর:** ১ কাপ ভাত, প্রচুর সবজি, ছোট মাছ (তেল কম)।
-            * **বিকাল:** শসা, ফল (চিনি ছাড়া)।
-            * **রাত:** সালাদ, সুপ বা ১টা রুটি। (৮টার মধ্যে খাবেন)
-            """
-
-        st.markdown(f"""
-        <div class="feature-card" style="border-top: 5px solid {color};">
-            <h1 style="color:{color} !important;">BMI: {bmi:.1f}</h1>
-            <h3>{status}</h3>
-            <hr style="border-top: 1px solid rgba(255,255,255,0.2);">
-            <p style="text-align:left;"><b>🥗 আপনার জন্য ডায়েট চার্ট:</b></p>
-            <div style="text-align:left;">{diet}</div>
-        </div>
-        """, unsafe_allow_html=True)
+# -----------------------------------------------------------------------------
+# FOOTER
+# -----------------------------------------------------------------------------
+st.markdown("---")
+st.markdown("""
+<div style="text-align: center; color: #6c757d;">
+    <small>Made with ❤️ by <b>Your Medical Companion Bot</b> | Version 3.0 Final</small>
+</div>
+""", unsafe_allow_html=True)
