@@ -1,15 +1,67 @@
 District,Name,Location,Phone,Lat,Lon
-Dhaka,Dhaka Medical College,Bakshibazar,02-55165088,23.7252,90.3978
+Dhaka,Dhaka Medical College Hospital,Bakshibazar,02-55165088,23.7252,90.3978
+Dhaka,Kurmitola General Hospital,Cantonment,02-55062350,23.8191,90.4095
 Dhaka,Square Hospital,Panthapath,10616,23.7530,90.3814
-Dhaka,Evercare Hospital,Bashundhara,10678,23.8103,90.4312
-Dhaka,Kurmitola General,Cantonment,02-55062350,23.8191,90.4095
-Chittagong,Chittagong Medical College,Panchlaish,031-619400,22.3585,91.8217
-Chittagong,Evergreen Hospital,Surson Road,031-654046,22.3524,91.8290
-Sylhet,MAG Osmani Medical,Medical Road,0821-713667,24.9015,91.8524
-Sylhet,Al Haramain Hospital,Subhanighat,01931225555,24.8864,91.8823
-Rajshahi,Rajshahi Medical College,Rajshahi,0721-776001,24.3713,88.5873
-Khulna,Khulna Medical College,Khulna,041-760350,22.8228,89.5407
-Barisal,Sher-e-Bangla Medical,Band Road,0431-2173547,22.6908,90.3705
-Rangpur,Rangpur Medical College,Rangpur,0521-63102,25.7656,89.2323
-Mymensingh,Mymensingh Medical College,Charpara,091-66063,24.7434,90.4046
-Comilla,Comilla Medical College,Kuchaitoli,081-65562,23.4473,91.1764
+Chittagong,Chittagong Medical College Hospital,Panchlaish,031-619400,22.3585,91.8217
+Sylhet,MAG Osmani Medical College Hospital,Medical Rd,0821-713667,24.9015,91.8524
+Rajshahi,Rajshahi Medical College Hospital,Rajshahi,0721-776001,24.3713,88.5873
+Khulna,Khulna Medical College Hospital,Khulna,041-760350,22.8228,89.5407
+Barisal,Sher-e-Bangla Medical College Hospital,Band Road,0431-2173547,22.6908,90.3705
+Rangpur,Rangpur Medical College Hospital,Rangpur,0521-63102,25.7656,89.2323
+Mymensingh,Mymensingh Medical College Hospital,Charpara,091-66063,24.7434,90.4046
+Comilla,Comilla Medical College Hospital,Kuchaitoli,081-65562,23.4473,91.1764
+Bogra,Shaheed Ziaur Rahman Medical College,Silimpur,051-69000,24.8329,89.3722
+Faridpur,Bangabandhu Sheikh Mujib Medical College,Faridpur,0631-62555,23.5956,89.8465
+Dinajpur,M Abdur Rahim Medical College,Dinajpur,0531-64789,25.6279,88.6332
+Cox's Bazar,Cox's Bazar District Sadar Hospital,Sadar,0341-63800,21.4397,91.9791
+Jessore,Jessore 250 Bed General Hospital,Jessore,0421-68500,23.1662,89.2155
+Pabna,Pabna General Hospital,Pabna Sadar,0731-65489,24.0107,89.2370
+Tangail,Tangail 250 Bed General Hospital,Tangail,0921-64500,24.2505,89.9126
+Jamalpur,Jamalpur General Hospital,Jamalpur,0981-63255,24.9228,89.9463
+Kushtia,Kushtia General Hospital,Kushtia,071-61455,23.9080,89.1235
+Noakhali,Noakhali 250 Bed General Hospital,Maijdee,0321-61389,22.8427,91.0965
+Feni,Feni 250 Bed District Sadar Hospital,Feni,0331-73000,23.0186,91.3966
+Brahmanbaria,Brahmanbaria District Sadar Hospital,Brahmanbaria,0851-57455,23.9571,91.1119
+Chandpur,Chandpur 250 Bed General Hospital,Chandpur,0841-63555,23.2321,90.6631
+Habiganj,Habiganj District Sadar Hospital,Habiganj,0831-52566,24.3840,91.4169
+Sunamganj,Sunamganj District Sadar Hospital,Sunamganj,0871-61555,25.0712,91.4050
+Moulvibazar,Moulvibazar 250 Bed Hospital,Moulvibazar,0861-52350,24.4829,91.7699
+Narsingdi,Narsingdi District Hospital,Narsingdi,02-9462244,23.9322,90.7154
+Gazipur,Shaheed Tajuddin Ahmad Medical College,Gazipur,02-9263700,23.9912,90.4200
+Narayanganj,Narayanganj 300 Bed Hospital,Khanpur,02-7645855,23.6161,90.5055
+Manikganj,Manikganj District Sadar Hospital,Manikganj,02-7710355,23.8644,90.0047
+Munshiganj,Munshiganj General Hospital,Munshiganj,02-7611455,23.5484,90.5348
+Gopalganj,Sheikh Sayera Khatun Medical College,Gopalganj,02-6685400,23.0050,89.8265
+Madaripur,Madaripur District Sadar Hospital,Madaripur,0661-61555,23.1648,90.2133
+Shariatpur,Shariatpur District Sadar Hospital,Shariatpur,0601-55555,23.2185,90.3524
+Rajbari,Rajbari District Sadar Hospital,Rajbari,0641-65455,23.7651,89.6454
+Magura,Magura 250 Bed Hospital,Magura,0488-62455,23.4855,89.4198
+Jhenaidah,Jhenaidah District Sadar Hospital,Jhenaidah,0451-62455,23.5450,89.1725
+Narail,Narail District Sadar Hospital,Narail,0481-62355,23.1725,89.5127
+Satkhira,Satkhira Medical College Hospital,Satkhira,0471-63455,22.7180,89.0705
+Bagerhat,Bagerhat District Sadar Hospital,Bagerhat,0468-62355,22.6602,89.7895
+Chuadanga,Chuadanga District Sadar Hospital,Chuadanga,0761-63255,23.6402,88.8418
+Meherpur,Meherpur 250 Bed General Hospital,Meherpur,0791-62355,23.7622,88.6318
+Sirajganj,Sirajganj 250 Bed General Hospital,Sirajganj,0751-62455,24.4534,89.6974
+Naogaon,Naogaon District Sadar Hospital,Naogaon,0741-62455,24.8105,88.9412
+Natore,Natore District Sadar Hospital,Natore,0771-66655,24.4102,88.9868
+Chapainawabganj,Chapainawabganj Sadar Hospital,Sadar,0781-55455,24.5965,88.2775
+Joypurhat,Joypurhat District Modern Hospital,Joypurhat,0571-62355,25.1018,89.0227
+Panchagarh,Panchagarh District Sadar Hospital,Panchagarh,0568-61455,26.3421,88.5566
+Thakurgaon,Thakurgaon District Sadar Hospital,Thakurgaon,0561-52355,26.0337,88.4617
+Nilphamari,Nilphamari District Sadar Hospital,Nilphamari,0551-61455,25.9324,88.8566
+Lalmonirhat,Lalmonirhat District Sadar Hospital,Lalmonirhat,0591-61455,25.9165,89.4482
+Kurigram,Kurigram District Sadar Hospital,Kurigram,0581-61455,25.8096,89.6267
+Gaibandha,Gaibandha District Sadar Hospital,Gaibandha,0541-61455,25.3283,89.5422
+Sherpur,Sherpur District Sadar Hospital,Sherpur,0931-61455,25.0194,90.0175
+Netrokona,Netrokona District Sadar Hospital,Netrokona,0951-61455,24.8833,90.7250
+Kishoreganj,Shaheed Syed Nazrul Islam Medical College,Kishoreganj,0941-61900,24.4331,90.7695
+Bhola,Bhola 250 Bed General Hospital,Bhola,0491-62455,22.6865,90.6438
+Pirojpur,Pirojpur District Hospital,Pirojpur,0461-62455,22.5772,89.9715
+Jhalokati,Jhalokati District Sadar Hospital,Jhalokati,0498-63455,22.6423,90.1983
+Patuakhali,Patuakhali Medical College Hospital,Patuakhali,0441-62355,22.3551,90.3347
+Barguna,Barguna District Sadar Hospital,Barguna,0448-62455,22.1524,90.1207
+Lakshmipur,Lakshmipur District Sadar Hospital,Lakshmipur,0381-62455,22.9447,90.8282
+Khagrachari,Khagrachari District Sadar Hospital,Khagrachari,0371-62455,23.1116,91.9912
+Rangamati,Rangamati General Hospital,Rangamati,0351-62455,22.6533,92.1789
+Bandarban,Bandarban District Sadar Hospital,Bandarban,0361-62455,22.1953,92.2184
