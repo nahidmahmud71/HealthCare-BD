@@ -8,54 +8,104 @@ from streamlit_folium import folium_static
 
 # ================= 1. PAGE CONFIGURATION =================
 st.set_page_config(
-    page_title="HealthPlus BD | Ultimate",
+    page_title="HealthPlus BD",
     page_icon="🏥",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# ================= 2. SPLASH SCREEN (INTRO) =================
+# ================= 2. CSS STYLING (DARK GALAXY) =================
+st.markdown("""
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap');
+    
+    /* BACKGROUND ANIMATION */
+    @keyframes galaxy {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+    
+    [data-testid="stAppViewContainer"] {
+        background: linear-gradient(-45deg, #020024, #090979, #00d4ff, #000000);
+        background-size: 400% 400%;
+        animation: galaxy 15s ease infinite;
+        color: white;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    /* SIDEBAR */
+    [data-testid="stSidebar"] {
+        background-color: rgba(0, 10, 30, 0.95);
+        border-right: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    [data-testid="stSidebar"] * { color: white !important; }
+
+    /* CARD DESIGN (GLASS + FLOATING) */
+    @keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-5px); }
+        100% { transform: translateY(0px); }
+    }
+    
+    .feature-card, .doc-card, .hosp-card, .sym-card, .amb-card {
+        background: rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(12px);
+        padding: 20px;
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+        margin-bottom: 20px;
+        transition: 0.3s;
+        animation: float 6s ease-in-out infinite;
+    }
+    
+    .feature-card:hover, .doc-card:hover {
+        background: rgba(255, 255, 255, 0.15);
+        transform: scale(1.02);
+        border-color: #00d4ff;
+    }
+
+    /* TEXT COLORS */
+    h1, h2, h3, h4, h5, p, span, div, label, li { color: white !important; }
+    .highlight { color: #00d4ff !important; font-weight: bold; }
+    .warning { color: #ff6b6b !important; font-weight: bold; }
+
+    /* BUTTONS */
+    .stButton>button {
+        background: linear-gradient(90deg, #00d4ff, #005bea);
+        color: white !important;
+        border: none;
+        border-radius: 50px;
+        padding: 10px 20px;
+        font-weight: bold;
+        width: 100%;
+        transition: 0.3s;
+    }
+    .stButton>button:hover {
+        transform: scale(1.05);
+        box-shadow: 0 0 20px rgba(0, 212, 255, 0.6);
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# ================= 3. SPLASH SCREEN =================
 if 'splash_shown' not in st.session_state:
     st.session_state.splash_shown = False
 
 if not st.session_state.splash_shown:
     st.markdown("""
-    <style>
-        .stApp { background-color: #000000; }
-        .intro-box {
-            height: 90vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            animation: fadeIn 2s ease-in-out;
-        }
-        .name-title {
-            font-size: 4rem;
-            font-weight: 800;
-            background: linear-gradient(to right, #00c6ff, #0072ff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            margin-bottom: 15px;
-            text-shadow: 0 0 30px rgba(0, 198, 255, 0.6);
-        }
-        .uni-sub { font-size: 2.2rem; color: white; font-weight: 700; }
-        .college-sub { font-size: 1.3rem; color: #bbb; font-style: italic; margin-top: 10px; }
-        @keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
-    </style>
-    <div class="intro-box">
-        <div class="name-title">MD NAHID MAHMUD</div>
-        <div class="uni-sub">Southeast University</div>
-        <div class="college-sub">Former Student: Cantonment College Jashore</div>
+    <div style="height:90vh; display:flex; flex-direction:column; justify-content:center; align-items:center;">
+        <h1 style="font-size:3.5rem; background:linear-gradient(to right, #00c6ff, #0072ff); -webkit-background-clip:text; -webkit-text-fill-color:transparent; text-transform:uppercase; margin-bottom:10px;">MD NAHID MAHMUD</h1>
+        <h2 style="color:white;">Southeast University</h2>
+        <p style="color:#aaa; font-style:italic;">Former Student: Cantonment College Jashore</p>
     </div>
     """, unsafe_allow_html=True)
-    time.sleep(4.5)
+    time.sleep(4)
     st.session_state.splash_shown = True
     st.rerun()
 
-# ================= 3. ASSETS =================
+# ================= 4. ASSETS & DATA =================
 @st.cache_data
 def load_lottie(url):
     try:
@@ -64,92 +114,14 @@ def load_lottie(url):
         return r.json()
     except: return None
 
+# Animations
 anim_home = load_lottie("https://assets10.lottiefiles.com/packages/lf20_pnycZg.json")
 anim_doc = load_lottie("https://assets10.lottiefiles.com/packages/lf20_5njp3vgg.json")
 anim_amb = load_lottie("https://assets9.lottiefiles.com/packages/lf20_z4cshyhf.json")
 anim_symptom = load_lottie("https://lottie.host/58819173-0740-4a80-9646-7a8311145491/6S5u5Q0D32.json")
 anim_bmi = load_lottie("https://assets2.lottiefiles.com/packages/lf20_wopcsux6.json")
 
-# ================= 4. DARK GALAXY THEME CSS =================
-st.markdown("""
-<style>
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap');
-    
-    /* --- ANIMATED BACKGROUND --- */
-    @keyframes galaxy {
-        0% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-        100% { background-position: 0% 50%; }
-    }
-    
-    [data-testid="stAppViewContainer"] {
-        /* Deep Dark Blue Galaxy Gradient */
-        background: linear-gradient(-45deg, #020024, #002c5f, #000814, #010b1c);
-        background-size: 400% 400%;
-        animation: galaxy 15s ease infinite;
-        color: white;
-        font-family: 'Poppins', sans-serif;
-    }
-
-    /* --- SIDEBAR --- */
-    [data-testid="stSidebar"] {
-        background-color: rgba(0, 5, 20, 0.95);
-        border-right: 1px solid rgba(0, 198, 255, 0.1);
-    }
-    [data-testid="stSidebar"] * {
-        color: white !important;
-    }
-
-    /* --- GLASS CARDS --- */
-    @keyframes float {
-        0% { transform: translateY(0px); }
-        50% { transform: translateY(-6px); }
-        100% { transform: translateY(0px); }
-    }
-    
-    .feature-card, .doc-card, .hosp-card, .sym-card, .amb-card {
-        background: rgba(255, 255, 255, 0.08);
-        backdrop-filter: blur(12px);
-        padding: 25px;
-        border-radius: 20px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
-        margin-bottom: 20px;
-        transition: 0.3s;
-        animation: float 6s ease-in-out infinite;
-    }
-    
-    .feature-card:hover, .doc-card:hover {
-        background: rgba(255, 255, 255, 0.15);
-        border-color: #00d4ff;
-        transform: scale(1.02);
-    }
-
-    /* Text Colors */
-    h1, h2, h3, h4, h5, p, div, span, label { color: white !important; }
-    .highlight { color: #00d4ff !important; font-weight: bold; text-shadow: 0 0 10px rgba(0, 212, 255, 0.5); }
-    .warning { color: #ff6b6b !important; font-weight: bold; }
-
-    /* Buttons */
-    .stButton>button {
-        background: linear-gradient(90deg, #00d4ff, #005bea);
-        color: white !important;
-        border: none;
-        border-radius: 50px;
-        padding: 12px 25px;
-        font-weight: bold;
-        transition: 0.3s;
-        width: 100%;
-        box-shadow: 0 0 15px rgba(0, 212, 255, 0.4);
-    }
-    .stButton>button:hover {
-        transform: scale(1.05);
-        box-shadow: 0 0 25px rgba(0, 212, 255, 0.8);
-    }
-</style>
-""", unsafe_allow_html=True)
-
-# ================= 5. DATA LOADING =================
+# Data Loading
 ALL_DISTRICTS = sorted([
     "Bagerhat", "Bandarban", "Barguna", "Barisal", "Bhola", "Bogra", "Brahmanbaria", "Chandpur", 
     "Chapainawabganj", "Chittagong", "Chuadanga", "Comilla", "Cox's Bazar", "Dhaka", "Dinajpur", 
@@ -174,30 +146,30 @@ def load_data():
 
 df_h, df_d, df_a = load_data()
 
-# ================= 6. SIDEBAR =================
+# ================= 5. SIDEBAR =================
 with st.sidebar:
     st.image("https://cdn-icons-png.flaticon.com/512/3063/3063205.png", width=80)
     st.markdown("### HealthPlus BD")
     st.divider()
-    selected_district = st.selectbox("📍 জেলা নির্বাচন করুন:", ALL_DISTRICTS, index=ALL_DISTRICTS.index("Dhaka"))
+    selected_district = st.selectbox("📍 জেলা:", ALL_DISTRICTS, index=ALL_DISTRICTS.index("Dhaka"))
     st.write("")
-    menu = st.radio("মেনু:", ["🏠 হোম পেজ", "🤒 প্রাথমিক চিকিৎসা", "🏥 হাসপাতাল ও ম্যাপ", "👨‍⚕️ ডাক্তার খুঁজুন", "🚑 অ্যাম্বুলেন্স", "📊 BMI ও ডায়েট"])
+    menu = st.radio("মেনু:", ["🏠 হোম পেজ", "🤒 প্রাথমিক চিকিৎসা", "🏥 হাসপাতাল", "👨‍⚕️ ডাক্তার", "🚑 অ্যাম্বুলেন্স", "📊 BMI ও ডায়েট"])
     st.divider()
-    st.info("🚨 জরুরী: **999**")
+    st.info("জরুরী: 999")
 
-# ================= 7. MAIN CONTENT =================
+# ================= 6. MAIN CONTENT =================
 
 # --- HOME ---
 if menu == "🏠 হোম পেজ":
-    st.markdown("<h1 style='text-align:center; font-size:3.5rem; text-shadow:0 0 20px #00d4ff;'>HealthPlus Bangladesh</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align:center; color:#00d4ff !important;'>HealthPlus Bangladesh</h1>", unsafe_allow_html=True)
     st.markdown(f"<p style='text-align:center;'>জেলা: <b class='highlight'>{selected_district}</b> | স্মার্ট স্বাস্থ্য সেবা</p>", unsafe_allow_html=True)
     
     c1, c2 = st.columns([1.2, 0.8])
     with c1:
         st.write("### 👋 স্বাগতম!")
-        st.write("HealthPlus BD অ্যাপে আপনাকে স্বাগতম। আমরা দিচ্ছি ৬৪ জেলার পূর্ণাঙ্গ স্বাস্থ্য সেবা।")
+        st.write("আপনার জেলার সকল ইমার্জেন্সি স্বাস্থ্যসেবা এখন এক ক্লিকে।")
         
-        # Stats
+        # Count Data
         h_cnt = len(df_h[df_h['District'] == selected_district])
         d_cnt = len(df_d[df_d['District'] == selected_district])
         
@@ -206,42 +178,46 @@ if menu == "🏠 হোম পেজ":
         with s2: st.markdown(f"<div class='feature-card'><h1 class='highlight'>{d_cnt}</h1><p>ডাক্তার</p></div>", unsafe_allow_html=True)
 
     with c2:
-        if anim_home: st_lottie(anim_home, height=280)
+        if anim_home: st_lottie(anim_home, height=250)
 
     st.markdown("---")
+    # Quick Links Grid
     col1, col2, col3, col4 = st.columns(4)
     with col1: st.markdown("<div class='feature-card'><h1>🤒</h1><h4>Symptom</h4></div>", unsafe_allow_html=True)
     with col2: st.markdown("<div class='feature-card'><h1>👨‍⚕️</h1><h4>Doctor</h4></div>", unsafe_allow_html=True)
     with col3: st.markdown("<div class='feature-card'><h1>🚑</h1><h4>Ambulance</h4></div>", unsafe_allow_html=True)
-    with col4: st.markdown("<div class='feature-card'><h1>📊</h1><h4>Diet</h4></div>", unsafe_allow_html=True)
+    with col4: st.markdown("<div class='feature-card'><h1>📊</h1><h4>Diet Plan</h4></div>", unsafe_allow_html=True)
 
 # --- SYMPTOM CHECKER (DETAILED) ---
 elif menu == "🤒 প্রাথমিক চিকিৎসা":
     st.markdown("## 🤒 বিস্তারিত প্রাথমিক চিকিৎসা")
+    
     c1, c2 = st.columns([1, 2])
     with c1: 
         if anim_symptom: st_lottie(anim_symptom, height=200)
     with c2:
         symptom = st.selectbox("কোন সমস্যাটি হচ্ছে?", 
-            ["বাছাই করুন...", "জ্বর (Fever)", "ঠান্ডা/সর্দি (Common Cold)", "গ্যাস্ট্রিক/বুক জ্বালা", "মাথা ব্যথা", "শরীরে কাটা/ক্ষত", "পুড়ে যাওয়া (Burn)", "ডায়রিয়া", "ডেঙ্গু লক্ষণ (Dengue)", "উচ্চ রক্তচাপ (High BP)"]
+            ["বাছাই করুন...", "জ্বর (Fever)", "ঠান্ডা/সর্দি", "গ্যাস্ট্রিক", "মাথা ব্যথা", "শরীরে কাটা", "পুড়ে যাওয়া", "ডায়রিয়া", "উচ্চ রক্তচাপ"]
         )
 
     if symptom != "বাছাই করুন...":
         st.markdown(f"### 🩺 পরামর্শ: <span class='highlight'>{symptom}</span>", unsafe_allow_html=True)
+        
+        # Dictionary Data
         data = {
             "জ্বর (Fever)": {
-                "med": "প্যারাসিটামল (Napa/Ace) ৫০০ মিগ্রা। দিনে ৩ বার ভরা পেটে।",
+                "med": "প্যারাসিটামল (Napa/Ace) ৫০০ মিগ্রা। প্রাপ্তবয়স্কদের জন্য দিনে ৩ বার খাওয়ার পর।",
                 "food": "পাতলা স্যুপ, ফলের রস, জাউভাত।",
                 "avoid": "ঠান্ডা পানি, আইসক্রিম, ভাজাপোড়া।",
                 "warn": "জ্বর ১০৩° এর বেশি হলে বা ৩ দিনের বেশি থাকলে ডাক্তার দেখান।"
             },
-            "ঠান্ডা/সর্দি (Common Cold)": {
+            "ঠান্ডা/সর্দি": {
                 "med": "অ্যান্টিহিস্টামিন (Fexo 120mg) রাতে ১টি। নাক বন্ধ থাকলে Antazol ড্রপ।",
                 "food": "আদা চা, মধু, গরম পানি, লেবু।",
                 "avoid": "ঠান্ডা বাতাস, ধুমপান।",
                 "warn": "শ্বাসকষ্ট হলে বা বুকে কফ জমে গেলে দ্রুত ডাক্তার দেখান।"
             },
-            "গ্যাস্ট্রিক/বুক জ্বালা": {
+            "গ্যাস্ট্রিক": {
                 "med": "এন্টাসিড সিরাপ ২ চামচ অথবা ওমিপ্রাজল (Seclo 20mg) খাওয়ার আগে।",
                 "food": "শসা, ডাবের পানি, ঠান্ডা দুধ, পেঁপে।",
                 "avoid": "ঝাল, মশলাদার খাবার, খালি পেটে থাকা।",
@@ -253,11 +229,17 @@ elif menu == "🤒 প্রাথমিক চিকিৎসা":
                 "avoid": "মোবাইল স্ক্রিন, কড়া রোদ, অনিদ্রা।",
                 "warn": "বমি বা চোখে ঝাপসা দেখলে নিউরোলোজিস্ট দেখান।"
             },
-            "ডেঙ্গু লক্ষণ (Dengue)": {
-                "med": "শুধুমাত্র প্যারাসিটামল। অন্য কোনো ব্যথানাশক (Painkiller) খাবেন না।",
-                "food": "প্রচুর স্যালাইন, ডাব, পেঁপে পাতার রস।",
-                "avoid": "লাল রঙের খাবার (যাতে রক্তক্ষরণ বোঝা যায় না)।",
-                "warn": "দাঁত/নাক দিয়ে রক্ত পড়লে বা পেট ব্যথা হলে ইমার্জেন্সি।"
+            "শরীরে কাটা": {
+                "med": "স্যাভলন বা Povidone Iodine দিয়ে পরিষ্কার করুন।",
+                "food": "প্রোটিন যুক্ত খাবার (ডিম, মাছ)।",
+                "avoid": "কাটা স্থানে পানি লাগানো।",
+                "warn": "রক্তপাত ১০ মিনিটের বেশি হলে সেলাই লাগতে পারে।"
+            },
+            "পুড়ে যাওয়া": {
+                "med": "সিলভারজিন ক্রিম বা বার্নল মলম লাগান।",
+                "food": "ভিটামিন সি যুক্ত ফল।",
+                "avoid": "বরফ ঘষা, টুথপেস্ট লাগানো।",
+                "warn": "ফোসকা গলিয়ে দেবেন না। কাপড় চামড়ায় লেগে গেলে হাসপাতালে যান।"
             },
             "ডায়রিয়া": {
                 "med": "খাওয়ার স্যালাইন (Orsaline-N) প্রতিবার পায়খানার পর। জিংক ট্যাবলেট।",
@@ -265,27 +247,17 @@ elif menu == "🤒 প্রাথমিক চিকিৎসা":
                 "avoid": "দুধ, শাক, বাইরের খাবার।",
                 "warn": "প্রস্রাব ৬ ঘণ্টার বেশি বন্ধ থাকলে হাসপাতালে স্যালাইন দিতে হবে।"
             },
-             "শরীরে কাটা/ক্ষত": {
-                "med": "স্যাভলন বা Povidone Iodine দিয়ে পরিষ্কার করুন।",
-                "food": "প্রোটিন যুক্ত খাবার (ডিম, মাছ)।",
-                "avoid": "কাটা স্থানে পানি লাগানো।",
-                "warn": "রক্তপাত ১০ মিনিটের বেশি হলে সেলাই লাগতে পারে।"
-            },
-            "পুড়ে যাওয়া (Burn)": {
-                "med": "সিলভারজিন ক্রিম বা বার্নল মলম লাগান।",
-                "food": "ভিটামিন সি যুক্ত ফল।",
-                "avoid": "বরফ ঘষা, টুথপেস্ট লাগানো।",
-                "warn": "ফোসকা গলিয়ে দেবেন না। কাপড় চামড়ায় লেগে গেলে হাসপাতালে যান।"
-            },
-            "উচ্চ রক্তচাপ (High BP)": {
+            "উচ্চ রক্তচাপ": {
                 "med": "ডাক্তারের পরামর্শ ছাড়া ঔষধ খাবেন না। তাৎক্ষণিক বিশ্রামে যান।",
                 "food": "টক দই, লেবু, রসুন।",
                 "avoid": "লবণ, গরুর মাংস, টেনশন।",
                 "warn": "ঘাড় ব্যথা বা বুকে চাপ অনুভব করলে হাসপাতালে যান।"
             }
         }
+        
         info = data.get(symptom, {})
         
+        # Tabs for details
         t1, t2, t3, t4 = st.tabs(["💊 ঔষধ", "🍲 খাবার", "🚫 বর্জনীয়", "🚨 সতর্কতা"])
         with t1: st.markdown(f"<div class='sym-card'><h4>প্রাথমিক ঔষধ</h4><p>{info.get('med')}</p></div>", unsafe_allow_html=True)
         with t2: st.markdown(f"<div class='sym-card'><h4>কী খাবেন</h4><p>{info.get('food')}</p></div>", unsafe_allow_html=True)
@@ -293,12 +265,12 @@ elif menu == "🤒 প্রাথমিক চিকিৎসা":
         with t4: st.markdown(f"<div class='sym-card' style='border-color:#ff6b6b;'><h4 class='warning'>সতর্কতা</h4><p>{info.get('warn')}</p></div>", unsafe_allow_html=True)
 
 # --- HOSPITAL ---
-elif menu == "🏥 হাসপাতাল ও ম্যাপ":
+elif menu == "🏥 হাসপাতাল":
     st.markdown(f"## 🏥 {selected_district}-এর হাসপাতাল")
     filtered_hosp = df_h[df_h['District'] == selected_district]
     
     if not filtered_hosp.empty:
-        tab1, tab2 = st.tabs(["📋 তালিকা", "🗺️ ম্যাপ"])
+        tab1, tab2 = st.tabs(["তালিকা", "ম্যাপ"])
         with tab1:
             for _, row in filtered_hosp.iterrows():
                 st.markdown(f"""
@@ -310,7 +282,8 @@ elif menu == "🏥 হাসপাতাল ও ম্যাপ":
                 </div>
                 """, unsafe_allow_html=True)
         with tab2:
-            avg_lat, avg_lon = filtered_hosp['Lat'].mean(), filtered_hosp['Lon'].mean()
+            avg_lat = filtered_hosp['Lat'].mean()
+            avg_lon = filtered_hosp['Lon'].mean()
             m = folium.Map(location=[avg_lat, avg_lon], zoom_start=13)
             for _, row in filtered_hosp.iterrows():
                 folium.Marker([row['Lat'], row['Lon']], popup=row['Name'], icon=folium.Icon(color="red", icon="plus-sign")).add_to(m)
@@ -319,31 +292,28 @@ elif menu == "🏥 হাসপাতাল ও ম্যাপ":
         st.warning("তথ্য আপডেট করা হচ্ছে...")
 
 # --- DOCTOR ---
-elif menu == "👨‍⚕️ ডাক্তার খুঁজুন":
+elif menu == "👨‍⚕️ ডাক্তার":
     st.markdown(f"## 👨‍⚕️ {selected_district}-এর ডাক্তার")
+    
     c1, c2 = st.columns([2, 1])
-    with c2: st_lottie(anim_doc, height=150)
+    with c2: 
+        if anim_doc: st_lottie(anim_doc, height=150)
     
     filtered_docs = df_d[df_d['District'] == selected_district]
     if not filtered_docs.empty:
-        specs = ["সকল বিভাগ"] + sorted(filtered_docs['Specialty'].unique().tolist())
-        choice = st.selectbox("বিভাগ ফিল্টার করুন:", specs)
-        if choice != "সকল বিভাগ": filtered_docs = filtered_docs[filtered_docs['Specialty'] == choice]
+        specs = ["সকল"] + sorted(filtered_docs['Specialty'].unique().tolist())
+        choice = st.selectbox("বিভাগ:", specs)
+        if choice != "সকল": filtered_docs = filtered_docs[filtered_docs['Specialty'] == choice]
         
-        st.markdown("---")
+        st.write("")
         cols = st.columns(2)
         for i, (index, row) in enumerate(filtered_docs.iterrows()):
             with cols[i % 2]:
                 st.markdown(f"""
                 <div class="doc-card" style="border-left: 5px solid #00d4ff;">
-                    <div style="display:flex; align-items:center;">
-                        <div style="font-size:2rem; margin-right:15px;">👨‍⚕️</div>
-                        <div>
-                            <h3 style="margin:0;">{row['Name']}</h3>
-                            <span class="highlight">{row['Specialty']}</span>
-                            <p style="font-size:0.9rem;">🏥 {row['Hospital']}</p>
-                        </div>
-                    </div>
+                    <h3 style="margin:0;">{row['Name']}</h3>
+                    <span class="highlight">{row['Specialty']}</span>
+                    <p>🏥 {row['Hospital']}</p>
                     <a href="tel:{row['Phone']}"><button style="margin-top:10px;">📞 অ্যাপয়েন্টমেন্ট</button></a>
                 </div>
                 """, unsafe_allow_html=True)
@@ -351,8 +321,10 @@ elif menu == "👨‍⚕️ ডাক্তার খুঁজুন":
 # --- AMBULANCE ---
 elif menu == "🚑 অ্যাম্বুলেন্স":
     st.markdown("## 🚑 অ্যাম্বুলেন্স সার্ভিস")
+    
     c1, c2 = st.columns([1, 1])
-    with c1: st_lottie(anim_amb, height=200)
+    with c1: 
+        if anim_amb: st_lottie(anim_amb, height=200)
     with c2:
         st.markdown("""
         <div class="feature-card" style="border-left:5px solid #ff6b6b;">
@@ -366,20 +338,22 @@ elif menu == "🚑 অ্যাম্বুলেন্স":
         """, unsafe_allow_html=True)
 
     filtered_amb = df_a[(df_a['District'] == selected_district) | (df_a['District'] == 'All BD')]
-    if not filtered_amb.empty:
-        for _, row in filtered_amb.iterrows():
-            st.markdown(f"""
-            <div class="amb-card" style="display:flex; justify-content:space-between; align-items:center;">
-                <div><h3>🚑 {row['ServiceName']}</h3><h2 class="warning">{row['Contact']}</h2></div>
-                <a href="tel:{row['Contact']}"><button style="background:#ff6b6b; width:auto;">📞 কল করুন</button></a>
-            </div>
-            """, unsafe_allow_html=True)
+    for _, row in filtered_amb.iterrows():
+        st.markdown(f"""
+        <div class="amb-card" style="display:flex; justify-content:space-between; align-items:center;">
+            <div><h3>{row['ServiceName']}</h3><h2 class="warning">{row['Contact']}</h2></div>
+            <a href="tel:{row['Contact']}"><button style="background:#ff6b6b; width:auto;">📞 কল করুন</button></a>
+        </div>
+        """, unsafe_allow_html=True)
 
-# --- BMI & DIET PLAN (DETAILED) ---
+# --- BMI & DIET ---
 elif menu == "📊 BMI ও ডায়েট":
     st.markdown("## 📊 ফিটনেস চেক ও ডায়েট")
+    
     c_anim, c_in = st.columns([1, 2])
-    with c_anim: if anim_bmi: st_lottie(anim_bmi, height=200)
+    with c_anim: 
+        if anim_bmi: st_lottie(anim_bmi, height=200)
+    
     with c_in:
         weight = st.number_input("ওজন (kg):", 30.0, 150.0, 60.0)
         c1, c2 = st.columns(2)
