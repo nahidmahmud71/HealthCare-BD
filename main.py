@@ -13,54 +13,55 @@ st.set_page_config(
 )
 
 # ================= 2. SPLASH SCREEN (INTRO ANIMATION) =================
-# অ্যাপ ওপেন হওয়ার সাথে সাথে এই ইন্ট্রো দেখাবে
+# অ্যাপ ওপেন হলে এই ইন্ট্রো একবার দেখাবে, তারপর মেইন পেজে যাবে
 if 'splash_shown' not in st.session_state:
     st.session_state.splash_shown = False
 
 if not st.session_state.splash_shown:
     st.markdown("""
     <style>
-        .stApp { background-color: #000000; color: white; }
-        .intro-container {
+        .stApp { background-color: #000000; }
+        .intro-wrapper {
             display: flex;
             flex-direction: column;
-            align-items: center;
             justify-content: center;
-            height: 80vh;
-            animation: fadeIn 2.5s ease-in-out;
+            align-items: center;
+            height: 90vh;
+            animation: fadeIn 2s ease-in-out;
         }
-        .dev-text {
-            font-size: 2.5rem;
-            font-weight: bold;
+        .dev-name {
+            font-size: 3.5rem;
+            font-weight: 800;
             background: linear-gradient(to right, #00c6ff, #0072ff);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             margin-bottom: 10px;
+            text-transform: uppercase;
         }
-        .uni-text {
-            font-size: 1.8rem;
-            color: #e0e0e0;
-            font-weight: 500;
+        .uni-name {
+            font-size: 2rem;
+            color: #ffffff;
+            font-weight: 600;
+            margin-bottom: 5px;
         }
-        .college-text {
-            font-size: 1.2rem;
-            color: #a0a0a0;
-            margin-top: 5px;
+        .college-name {
+            font-size: 1.5rem;
+            color: #aaaaaa;
             font-style: italic;
         }
         @keyframes fadeIn {
-            0% { opacity: 0; transform: scale(0.9); }
+            0% { opacity: 0; transform: scale(0.8); }
             100% { opacity: 1; transform: scale(1); }
         }
     </style>
-    <div class="intro-container">
-        <div class="dev-text">Developed by MD NAHID MAHMUD</div>
-        <div class="uni-text">Southeast University</div>
-        <div class="college-text">Ex: Cantonment College Jashore</div>
+    <div class="intro-wrapper">
+        <div class="dev-name">MD NAHID MAHMUD</div>
+        <div class="uni-name">Southeast University</div>
+        <div class="college-name">Ex: Cantonment College Jashore</div>
     </div>
     """, unsafe_allow_html=True)
     
-    time.sleep(3.5) # 3.5 সেকেন্ড পর মেইন অ্যাপ আসবে
+    time.sleep(4) # ৪ সেকেন্ড পর মেইন পেজ আসবে
     st.session_state.splash_shown = True
     st.rerun()
 
@@ -81,10 +82,10 @@ anim_doc = load_lottie("https://assets10.lottiefiles.com/packages/lf20_5njp3vgg.
 import folium
 from streamlit_folium import folium_static
 
-# --- ADVANCED COLORFUL CSS (RESTORED BEST VERSION) ---
+# --- ADVANCED CSS (SIDEBAR FIX & COLORFUL DESIGN) ---
 st.markdown("""
 <style>
-    /* Font & Background */
+    /* Global Font */
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap');
     
     html, body, [class*="css"] {
@@ -92,17 +93,34 @@ st.markdown("""
         background-color: #f4f7f6;
     }
 
-    /* Sidebar Styling */
+    /* --- SIDEBAR VISIBILITY FIX --- */
     [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #ffffff 0%, #f0f8ff 100%);
-        border-right: 2px solid #cceeff;
+        background-color: #ffffff;
+        border-right: 2px solid #e0e0e0;
+    }
+    
+    /* সাইডবারের লেখাগুলো কালো/গাঢ় নীল করা হলো যাতে দেখা যায় */
+    [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3 {
+        color: #004085 !important;
+    }
+    [data-testid="stSidebar"] label {
+        color: #333333 !important;
+        font-weight: bold;
+    }
+    [data-testid="stSidebar"] .stRadio div[role='radiogroup'] label {
+        color: #333333 !important;
+        font-weight: 500;
+    }
+    /* নির্বাচিত মেনু হাইলাইট */
+    div[role="radiogroup"] > label > div:first-of-type {
+        background-color: #e3f2fd;
     }
 
-    /* Main Header Gradient */
+    /* --- MAIN PAGE DESIGN --- */
     .hero-title {
         font-size: 3.5rem;
         font-weight: 800;
-        background: linear-gradient(to right, #0061ff, #60efff);
+        background: linear-gradient(90deg, #0061ff, #60efff);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         text-align: center;
@@ -117,7 +135,7 @@ st.markdown("""
         margin-bottom: 40px;
     }
 
-    /* COLORFUL FEATURE CARDS (THE BEST VERSION) */
+    /* COLORFUL FEATURE CARDS */
     .feature-card {
         background: white;
         padding: 30px;
@@ -144,22 +162,35 @@ st.markdown("""
         box-shadow: 0 8px 20px rgba(0, 97, 255, 0.3);
     }
 
-    /* Doctor Card */
-    .doc-card {
+    /* Hospital/Doctor Cards */
+    .info-card {
         background: white;
         padding: 20px;
         border-radius: 15px;
-        border-left: 5px solid #0061ff;
+        border-left: 6px solid #FF4B4B;
         box-shadow: 0 5px 15px rgba(0,0,0,0.05);
         margin-bottom: 15px;
         transition: 0.3s;
     }
-    .doc-card:hover { transform: translateX(5px); }
+    .info-card:hover { transform: translateX(5px); box-shadow: 0 8px 25px rgba(255, 75, 75, 0.2); }
+    
+    /* Buttons */
+    .stButton>button {
+        background: linear-gradient(90deg, #0061ff, #00c6ff);
+        color: white;
+        border-radius: 50px;
+        font-weight: bold;
+        border: none;
+        padding: 10px 20px;
+        transition: 0.3s;
+        width: 100%;
+    }
+    .stButton>button:hover { transform: scale(1.05); }
 </style>
 """, unsafe_allow_html=True)
 
 # ================= 4. DATA LOADING =================
-# ৬৪ জেলার লিস্ট (Sorted)
+# 64 District List
 ALL_DISTRICTS = sorted([
     "Bagerhat", "Bandarban", "Barguna", "Barisal", "Bhola", "Bogra", "Brahmanbaria", "Chandpur", 
     "Chapainawabganj", "Chittagong", "Chuadanga", "Comilla", "Cox's Bazar", "Dhaka", "Dinajpur", 
@@ -175,14 +206,11 @@ ALL_DISTRICTS = sorted([
 @st.cache_data
 def load_data():
     try: df_h = pd.read_csv("hospitals_64.csv")
-    except: df_h = pd.DataFrame(columns=["District"])
-    
+    except: df_h = pd.DataFrame(columns=["District", "Name", "Location", "Phone", "Lat", "Lon"])
     try: df_d = pd.read_csv("doctors_64.csv")
-    except: df_d = pd.DataFrame(columns=["District"])
-    
+    except: df_d = pd.DataFrame(columns=["District", "Name", "Specialty", "Hospital", "Phone"])
     try: df_a = pd.read_csv("ambulances_64.csv")
-    except: df_a = pd.DataFrame(columns=["District"])
-    
+    except: df_a = pd.DataFrame(columns=["District", "ServiceName", "Contact"])
     return df_h, df_d, df_a
 
 df_h, df_d, df_a = load_data()
@@ -194,7 +222,7 @@ with st.sidebar:
     
     st.divider()
     
-    # জেলা সিলেক্টর
+    # জেলা নির্বাচন
     selected_district = st.selectbox(
         "📍 জেলা নির্বাচন করুন:", 
         ALL_DISTRICTS, 
@@ -206,7 +234,7 @@ with st.sidebar:
         ["🏠 হোম (Home)", "🏥 হাসপাতাল ও ম্যাপ", "👨‍⚕️ ডাক্তার খুঁজুন", "🚑 অ্যাম্বুলেন্স", "📊 BMI ক্যালকুলেটর"]
     )
     st.markdown("---")
-    st.info("জরুরী: **999**")
+    st.error("জরুরী হটলাইন: **999**")
 
 # ================= 6. MAIN CONTENT =================
 
@@ -222,10 +250,7 @@ if menu == "🏠 হোম (Home)":
         ### 👋 স্বাগতম!
         **HealthPlus BD** বাংলাদেশের প্রতিটি জেলার মানুষের জন্য একটি পূর্ণাঙ্গ স্বাস্থ্য সেবা অ্যাপ।
         
-        **ডেভেলপার:** MD NAHID MAHMUD  
-        **প্রতিষ্ঠান:** Southeast University
-        
-        **বর্তমান জেলার তথ্য ({selected_district}):**
+        **একনজরে {selected_district}:**
         """)
         
         # Live Stats
@@ -238,9 +263,9 @@ if menu == "🏠 হোম (Home)":
         with s3: st.markdown(f"<div class='stat-box'><h2>24/7</h2><p>সার্ভিস</p></div>", unsafe_allow_html=True)
 
     with c2:
-        if anim_welcome: st_lottie(anim_welcome, height=320, key="home_anim")
+        if anim_welcome: st_lottie(anim_welcome, height=300, key="home_anim")
 
-    # COLORFUL SERVICES GRID (The Design You Loved)
+    # COLORFUL SERVICES GRID
     st.markdown("---")
     st.subheader("🚀 আমাদের সেবাসমূহ")
     
@@ -281,21 +306,20 @@ if menu == "🏠 হোম (Home)":
             <p style="color:#777;">ডোনার কানেকশন</p>
         </div>
         """, unsafe_allow_html=True)
-
+        
     st.markdown("<br><br><div style='text-align:center; color:#ccc;'>© 2026 HealthPlus BD</div>", unsafe_allow_html=True)
 
+# --- HOSPITAL PAGE ---
 elif menu == "🏥 হাসপাতাল ও ম্যাপ":
     st.markdown(f"## 🏥 {selected_district}-এর হাসপাতাল")
-    
     filtered_hosp = df_h[df_h['District'] == selected_district]
     
     if not filtered_hosp.empty:
-        tab1, tab2 = st.tabs(["📋 তালিকা", "🗺️ ম্যাপ"])
-        
+        tab1, tab2 = st.tabs(["📋 তালিকা (List)", "🗺️ লাইভ ম্যাপ (Map)"])
         with tab1:
             for _, row in filtered_hosp.iterrows():
                 st.markdown(f"""
-                <div class="hospital-card">
+                <div class="info-card">
                     <h3 style="margin:0; color:#333;">{row['Name']}</h3>
                     <p style="margin:0; color:#666;">📍 {row['Location']}</p>
                     <a href="tel:{row['Phone']}" style="text-decoration:none;">
@@ -303,11 +327,9 @@ elif menu == "🏥 হাসপাতাল ও ম্যাপ":
                     </a>
                 </div>
                 """, unsafe_allow_html=True)
-        
         with tab2:
             st.write("### 🗺️ লোকেশন দেখুন")
-            avg_lat = filtered_hosp['Lat'].mean()
-            avg_lon = filtered_hosp['Lon'].mean()
+            avg_lat, avg_lon = filtered_hosp['Lat'].mean(), filtered_hosp['Lon'].mean()
             m = folium.Map(location=[avg_lat, avg_lon], zoom_start=12)
             for _, row in filtered_hosp.iterrows():
                 folium.Marker([row['Lat'], row['Lon']], popup=row['Name'], icon=folium.Icon(color="red", icon="plus-sign")).add_to(m)
@@ -316,27 +338,22 @@ elif menu == "🏥 হাসপাতাল ও ম্যাপ":
         st.warning(f"⚠️ {selected_district}-এর হাসপাতাল ডাটা শীঘ্রই যুক্ত হবে।")
         if anim_map: st_lottie(anim_map, height=200)
 
+# --- DOCTOR PAGE ---
 elif menu == "👨‍⚕️ ডাক্তার খুঁজুন":
     st.markdown(f"## 👨‍⚕️ {selected_district}-এর বিশেষজ্ঞ ডাক্তার")
-    
     filtered_docs = df_d[df_d['District'] == selected_district]
     
     if not filtered_docs.empty:
-        # Smart Filter
         specs = ["সকল বিভাগ"] + sorted(filtered_docs['Specialty'].unique().tolist())
         choice = st.selectbox("বিভাগ ফিল্টার করুন:", specs)
-        
-        if choice != "সকল বিভাগ":
-            filtered_docs = filtered_docs[filtered_docs['Specialty'] == choice]
+        if choice != "সকল বিভাগ": filtered_docs = filtered_docs[filtered_docs['Specialty'] == choice]
         
         st.divider()
-        
-        # Doctor Grid
         cols = st.columns(2)
         for i, (index, row) in enumerate(filtered_docs.iterrows()):
             with cols[i % 2]:
                 st.markdown(f"""
-                <div class="doc-card">
+                <div class="info-card" style="border-left-color: #0061ff;">
                     <div style="display:flex; justify-content:space-between; align-items:center;">
                         <div>
                             <h4 style="margin:0;">{row['Name']}</h4>
@@ -355,22 +372,22 @@ elif menu == "👨‍⚕️ ডাক্তার খুঁজুন":
         st.info(f"দুঃখিত, {selected_district}-এর ডাক্তার তালিকা এখনো আপডেট করা হয়নি।")
         if anim_doc: st_lottie(anim_doc, height=200)
 
+# --- AMBULANCE PAGE ---
 elif menu == "🚑 অ্যাম্বুলেন্স":
     st.markdown(f"## 🚑 অ্যাম্বুলেন্স সার্ভিস")
     filtered_amb = df_a[(df_a['District'] == selected_district) | (df_a['District'] == 'All BD')]
-    
     if not filtered_amb.empty:
         for _, row in filtered_amb.iterrows():
             st.error(f"🚑 {row['ServiceName']}: {row['Contact']}")
     else:
         st.error("জাতীয় জরুরী সেবা: **999**")
 
+# --- BMI PAGE ---
 elif menu == "📊 BMI ক্যালকুলেটর":
     st.markdown("## 📊 BMI চেক করুন")
     w = st.number_input("ওজন (kg):", 30, 150, 60)
     h_ft = st.number_input("উচ্চতা (ft):", 2, 8, 5)
     h_in = st.number_input("উচ্চতা (inch):", 0, 11, 6)
-    
     if st.button("হিসাব করুন"):
         h_m = ((h_ft*12)+h_in)*0.0254
         bmi = w/(h_m**2)
