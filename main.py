@@ -9,10 +9,50 @@ st.set_page_config(
     page_title="HealthPlus BD | Smart Health Hub",
     page_icon="🩺",
     layout="wide",
-    initial_sidebar_state="expanded"  # FIXED: Sidebar will always show now
+    initial_sidebar_state="expanded"
 )
 
-# ================= 2. ASSETS & ANIMATIONS =================
+# ================= 2. SPLASH SCREEN (INTRO ANIMATION) =================
+# এটি অ্যাপ খোলার সাথে সাথে একবারই দেখাবে
+if 'splash_shown' not in st.session_state:
+    st.session_state.splash_shown = False
+
+if not st.session_state.splash_shown:
+    # Full Screen Intro Design
+    st.markdown("""
+    <style>
+        .stApp { background-color: #000000; color: white; }
+        .intro-text {
+            text-align: center;
+            margin-top: 15%;
+            font-size: 3rem;
+            font-weight: bold;
+            background: linear-gradient(to right, #00c6ff, #0072ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: fadeIn 2s ease-in-out;
+        }
+        .uni-text {
+            text-align: center;
+            font-size: 1.5rem;
+            color: #ccc;
+            margin-top: 10px;
+        }
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+    <div class="intro-text">Developed by MD NAHID MAHMUD</div>
+    <div class="uni-text">Southeast University | CSE Batch 67</div>
+    """, unsafe_allow_html=True)
+    
+    # Wait for 3 seconds then reload to main app
+    time.sleep(3) 
+    st.session_state.splash_shown = True
+    st.rerun()
+
+# ================= 3. ASSETS & STYLING =================
 @st.cache_data
 def load_lottie(url):
     try:
@@ -23,102 +63,73 @@ def load_lottie(url):
 
 # Animations
 anim_welcome = load_lottie("https://assets10.lottiefiles.com/packages/lf20_pnycZg.json")
-anim_dashboard = load_lottie("https://lottie.host/020092f6-3c58-4c12-9c17-1ba3595b1213/102c7G1v9A.json")
+anim_map = load_lottie("https://assets3.lottiefiles.com/packages/lf20_s5id889b.json")
 
-# ================= 3. ADVANCED CSS (DESIGN ENGINE) =================
+# IMPORT MAIN LIBRARIES LATE FOR SPEED
+import folium
+from streamlit_folium import folium_static
+
+# Advanced CSS
 st.markdown("""
 <style>
-    /* Global Font */
-    @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;600;700&family=Poppins:wght@300;400;600;800&display=swap');
+    /* Reset & Fonts */
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap');
     
-    html, body, [class*="css"]  {
-        font-family: 'Poppins', 'Hind Siliguri', sans-serif;
+    html, body, [class*="css"] {
+        font-family: 'Poppins', sans-serif;
+        background-color: #f4f7f6;
     }
 
-    /* --- SIDEBAR DESIGN (FIXED VISIBILITY) --- */
+    /* Sidebar */
     [data-testid="stSidebar"] {
-        background-color: #f0f8ff; /* Light AliceBlue background */
-        border-right: 2px solid #dbe9f6;
-    }
-    
-    /* Sidebar Text Color Fix */
-    [data-testid="stSidebar"] p, [data-testid="stSidebar"] span, [data-testid="stSidebar"] label {
-        color: #004085 !important; /* Dark Blue Text for high contrast */
-        font-weight: 600;
+        background-color: #ffffff;
+        border-right: 2px solid #e0e0e0;
     }
 
-    /* Sidebar Radio Buttons Styling */
-    div[role="radiogroup"] > label > div:first-of-type {
-        background-color: #e3f2fd; /* Light bubble background */
-        border-radius: 5px;
-    }
-    
-    /* --- MAIN CONTENT DESIGN --- */
-    
-    /* Hero Title Gradient */
+    /* Main Header Gradient */
     .hero-title {
-        font-size: 3.5rem;
+        font-size: 3rem;
         font-weight: 800;
-        background: linear-gradient(to right, #0061ff, #60efff);
+        background: linear-gradient(90deg, #0061ff, #60efff);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         text-align: center;
-        margin-bottom: 0px;
-        text-shadow: 0px 4px 10px rgba(0, 97, 255, 0.1);
+        margin-bottom: 5px;
     }
     
-    .hero-subtitle {
-        text-align: center;
-        font-size: 1.2rem;
-        color: #555;
-        margin-bottom: 40px;
-        font-weight: 500;
-    }
-
-    /* Glassmorphism Cards */
-    .feature-card {
-        background: rgba(255, 255, 255, 0.9);
-        border-radius: 20px;
-        padding: 25px;
-        text-align: center;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-        border-bottom: 5px solid #0061ff;
-        transition: all 0.3s ease;
-        height: 100%;
-        cursor: pointer;
-    }
-    .feature-card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 20px 40px rgba(0, 97, 255, 0.2);
-        background: #ffffff;
-    }
-
-    /* Metric/Stat Box */
-    .stat-box {
-        background: linear-gradient(135deg, #0061ff, #00c6ff);
-        color: white;
+    /* Hospital Cards */
+    .hospital-card {
+        background: white;
         padding: 20px;
         border-radius: 15px;
-        text-align: center;
-        box-shadow: 0 8px 20px rgba(0, 97, 255, 0.3);
-        margin-bottom: 10px;
+        border-left: 6px solid #FF4B4B;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        margin-bottom: 15px;
+        transition: 0.3s;
     }
-    .stat-box h2 { color: white; margin: 0; font-size: 2.2rem; }
-    .stat-box p { color: #e0f0ff; margin: 0; font-size: 1rem; }
+    .hospital-card:hover {
+        transform: translateX(5px);
+        box-shadow: 0 8px 25px rgba(255, 75, 75, 0.2);
+    }
 
-    /* Footer */
-    .footer {
-        text-align: center;
-        margin-top: 50px;
-        padding: 20px;
-        color: #888;
-        border-top: 1px solid #ddd;
+    /* Button Styling */
+    .stButton>button {
+        background: linear-gradient(90deg, #0061ff, #00c6ff);
+        color: white;
+        border-radius: 50px;
+        font-weight: bold;
+        border: none;
+        padding: 10px 20px;
+        transition: 0.3s;
+    }
+    .stButton>button:hover {
+        transform: scale(1.05);
     }
 </style>
 """, unsafe_allow_html=True)
 
 # ================= 4. DATA LOADING =================
-# LIST OF ALL 64 DISTRICTS
+# ৬৪ জেলার নাম (সাজানো)
 ALL_DISTRICTS = sorted([
     "Bagerhat", "Bandarban", "Barguna", "Barisal", "Bhola", "Bogra", "Brahmanbaria", "Chandpur", 
     "Chapainawabganj", "Chittagong", "Chuadanga", "Comilla", "Cox's Bazar", "Dhaka", "Dinajpur", 
@@ -139,19 +150,22 @@ def load_data():
     try: df_d = pd.read_csv("doctors_64.csv")
     except: df_d = pd.DataFrame(columns=["District"])
     
-    return df_h, df_d
+    try: df_a = pd.read_csv("ambulances_64.csv")
+    except: df_a = pd.DataFrame(columns=["District"])
+    
+    return df_h, df_d, df_a
 
-df_h, df_d = load_data()
+df_h, df_d, df_a = load_data()
 
-# ================= 5. SIDEBAR NAVIGATION (FIXED VISIBILITY) =================
+# ================= 5. SIDEBAR NAVIGATION =================
 with st.sidebar:
-    st.image("https://cdn-icons-png.flaticon.com/512/3063/3063205.png", width=70)
+    st.image("https://cdn-icons-png.flaticon.com/512/3063/3063205.png", width=80)
     st.markdown("### HealthPlus BD")
-    st.markdown("**আপনার ডিজিটাল স্বাস্থ্য সঙ্গী**")
+    st.caption("Developed by **MD NAHID MAHMUD**")
     
     st.divider()
     
-    # --- 64 DISTRICT SELECTOR ---
+    # District Selector
     selected_district = st.selectbox(
         "📍 জেলা নির্বাচন করুন:", 
         ALL_DISTRICTS, 
@@ -159,97 +173,108 @@ with st.sidebar:
     )
     
     st.divider()
-    
-    # Navigation Menu
     menu = st.radio("মেনু:", 
-        ["🏠 হোম (Home)", "🏥 হাসপাতাল", "👨‍⚕️ ডাক্তার", "🚑 অ্যাম্বুলেন্স", "🩸 ব্লাড ব্যাংক", "📊 BMI ক্যালকুলেটর"]
+        ["🏠 হোম (Home)", "🏥 হাসপাতাল ও ম্যাপ", "👨‍⚕️ ডাক্তার", "🚑 অ্যাম্বুলেন্স", "📊 BMI ক্যালকুলেটর"]
     )
-    
-    st.divider()
-    st.warning("📞 ইমার্জেন্সি: **999**")
+    st.markdown("---")
+    st.error("জরুরী হটলাইন: **999**")
 
 # ================= 6. MAIN CONTENT =================
 
 if menu == "🏠 হোম (Home)":
-    # Hero Section
+    # Hero Title
     st.markdown("<div class='hero-title'>HealthPlus Bangladesh</div>", unsafe_allow_html=True)
-    st.markdown(f"<div class='hero-subtitle'>বর্তমানে নির্বাচিত জেলা: <b>{selected_district}</b> | সঠিক তথ্য, সঠিক চিকিৎসা</div>", unsafe_allow_html=True)
+    st.markdown(f"<p style='text-align:center;'>আপনার জেলা: <b>{selected_district}</b></p>", unsafe_allow_html=True)
     
-    # Animation & Intro
-    c1, c2 = st.columns([1.2, 0.8])
+    # Welcome Animation
+    c1, c2 = st.columns([1, 1])
     with c1:
         st.markdown(f"""
         ### 👋 স্বাগতম!
-        **HealthPlus BD** বাংলাদেশের প্রতিটি জেলার মানুষের স্বাস্থ্যসেবা নিশ্চিত করতে তৈরি করা হয়েছে।
+        **MD NAHID MAHMUD** এর ডেভেলপ করা এই অ্যাপে আপনাকে স্বাগতম।
+        আমরা ৬৪ জেলার মানুষের স্বাস্থ্যসেবা নিশ্চিত করতে এটি তৈরি করেছি।
         
-        বর্তমানে আপনি **{selected_district}** জেলার তথ্য দেখছেন। বাম পাশের মেনু থেকে হাসপাতাল, ডাক্তার বা অ্যাম্বুলেন্স সেবা নির্বাচন করুন।
+        **একনজরে {selected_district}:**
+        * 🏥 হাসপাতাল: **{len(df_h[df_h['District']==selected_district])}** টি
+        * 👨‍⚕️ ডাক্তার: **{len(df_d[df_d['District']==selected_district])}** জন
         """)
         
-        st.write("") # Spacer
+        st.info("👈 বাম পাশের মেনু থেকে সেবা নির্বাচন করুন।")
         
-        # Dynamic Stats
-        h_count = len(df_h[df_h['District'] == selected_district])
-        d_count = len(df_d[df_d['District'] == selected_district])
-        
-        s1, s2, s3 = st.columns(3)
-        with s1: st.markdown(f"<div class='stat-box'><h2>{h_count}</h2><p>হাসপাতাল</p></div>", unsafe_allow_html=True)
-        with s2: st.markdown(f"<div class='stat-box'><h2>{d_count}</h2><p>ডাক্তার</p></div>", unsafe_allow_html=True)
-        with s3: st.markdown(f"<div class='stat-box'><h2>24/7</h2><p>সার্ভিস</p></div>", unsafe_allow_html=True)
-
     with c2:
-        if anim_welcome: st_lottie(anim_welcome, height=350, key="home_anim")
+        if anim_welcome: st_lottie(anim_welcome, height=300)
 
-    # Services Grid (Features)
-    st.markdown("---")
-    st.subheader("🚀 আমাদের সেবাসমূহ")
+elif menu == "🏥 হাসপাতাল ও ম্যাপ":
+    st.markdown(f"## 🏥 {selected_district}-এর হাসপাতাল")
     
-    col1, col2, col3, col4 = st.columns(4)
+    filtered_hosp = df_h[df_h['District'] == selected_district]
     
-    with col1:
-        st.markdown("""
-        <div class="feature-card" style="border-bottom-color: #FF4B4B;">
-            <h1 style="font-size: 3.5rem; margin:0;">🏥</h1>
-            <h3 style="color:#333; margin:10px 0;">হাসপাতাল</h3>
-            <p style="color:#777;">লোকেশন ও ম্যাপ</p>
-        </div>
-        """, unsafe_allow_html=True)
+    if not filtered_hosp.empty:
+        tab1, tab2 = st.tabs(["📋 তালিকা (List)", "🗺️ লাইভ ম্যাপ (Map)"])
         
-    with col2:
-        st.markdown("""
-        <div class="feature-card" style="border-bottom-color: #4F8BF9;">
-            <h1 style="font-size: 3.5rem; margin:0;">👨‍⚕️</h1>
-            <h3 style="color:#333; margin:10px 0;">ডাক্তার</h3>
-            <p style="color:#777;">স্পেশালিস্ট খুঁজুন</p>
-        </div>
-        """, unsafe_allow_html=True)
-        
-    with col3:
-        st.markdown("""
-        <div class="feature-card" style="border-bottom-color: #28a745;">
-            <h1 style="font-size: 3.5rem; margin:0;">🚑</h1>
-            <h3 style="color:#333; margin:10px 0;">অ্যাম্বুলেন্স</h3>
-            <p style="color:#777;">জরুরী সেবা</p>
-        </div>
-        """, unsafe_allow_html=True)
-        
-    with col4:
-        st.markdown("""
-        <div class="feature-card" style="border-bottom-color: #ffc107;">
-            <h1 style="font-size: 3.5rem; margin:0;">🩸</h1>
-            <h3 style="color:#333; margin:10px 0;">ব্লাড ব্যাংক</h3>
-            <p style="color:#777;">ডোনার কানেকশন</p>
-        </div>
-        """, unsafe_allow_html=True)
+        with tab1:
+            for _, row in filtered_hosp.iterrows():
+                st.markdown(f"""
+                <div class="hospital-card">
+                    <h3 style="margin:0; color:#333;">{row['Name']}</h3>
+                    <p style="margin:0; color:#666;">📍 {row['Location']}</p>
+                    <a href="tel:{row['Phone']}" style="text-decoration:none;">
+                        <h4 style="margin:10px 0 0 0; color:#FF4B4B;">📞 {row['Phone']}</h4>
+                    </a>
+                </div>
+                """, unsafe_allow_html=True)
+                
+        with tab2:
+            st.write("### 🗺️ লোকেশন দেখুন")
+            avg_lat = filtered_hosp['Lat'].mean()
+            avg_lon = filtered_hosp['Lon'].mean()
+            
+            m = folium.Map(location=[avg_lat, avg_lon], zoom_start=12)
+            for _, row in filtered_hosp.iterrows():
+                folium.Marker(
+                    [row['Lat'], row['Lon']],
+                    popup=f"<b>{row['Name']}</b><br>{row['Phone']}",
+                    icon=folium.Icon(color="red", icon="plus-sign")
+                ).add_to(m)
+            folium_static(m)
+    else:
+        st.warning(f"⚠️ {selected_district}-এর ডাটা শীঘ্রই আপডেট করা হবে।")
+        if anim_map: st_lottie(anim_map, height=200)
 
-    # Footer
-    st.markdown("""
-    <div class='footer'>
-        <p>© 2026 HealthPlus BD | Developed for Humanity ❤️</p>
-    </div>
-    """, unsafe_allow_html=True)
+elif menu == "👨‍⚕️ ডাক্তার":
+    st.markdown(f"## 👨‍⚕️ {selected_district}-এর ডাক্তার")
+    filtered_docs = df_d[df_d['District'] == selected_district]
+    
+    if not filtered_docs.empty:
+        for _, row in filtered_docs.iterrows():
+            st.markdown(f"""
+            <div style="background:white; padding:15px; border-radius:10px; border-left:5px solid #0061ff; margin-bottom:10px;">
+                <h4 style="margin:0;">{row['Name']}</h4>
+                <p style="margin:0;">{row['Specialty']}</p>
+                <p style="color:#666; font-size:12px;">🏥 {row['Hospital']}</p>
+                <h5 style="color:#0061ff;">📞 {row['Phone']}</h5>
+            </div>
+            """, unsafe_allow_html=True)
+    else:
+        st.info("ডাক্তারের তালিকা আপডেট করা হচ্ছে...")
 
-# Placeholder for other pages
-else:
-    st.markdown(f"<div class='hero-title'>{menu}</div>", unsafe_allow_html=True)
-    st.info(f"🚧 আপনি এখন **{menu}** পেজে আছেন। আমরা ধাপে ধাপে প্রতিটি সেকশন ডিজাইন করছি।")
-    if anim_dashboard: st_lottie(anim_dashboard, height=300)
+elif menu == "🚑 অ্যাম্বুলেন্স":
+    st.markdown(f"## 🚑 অ্যাম্বুলেন্স সার্ভিস")
+    filtered_amb = df_a[(df_a['District'] == selected_district) | (df_a['District'] == 'All BD')]
+    
+    if not filtered_amb.empty:
+        for _, row in filtered_amb.iterrows():
+            st.error(f"🚑 {row['ServiceName']}: {row['Contact']}")
+    else:
+        st.error("জাতীয় জরুরী সেবা: **999**")
+
+elif menu == "📊 BMI ক্যালকুলেটর":
+    st.markdown("## 📊 BMI চেক করুন")
+    w = st.number_input("ওজন (kg):", 30, 150, 60)
+    h_ft = st.number_input("উচ্চতা (ft):", 2, 8, 5)
+    h_in = st.number_input("উচ্চতা (inch):", 0, 11, 6)
+    
+    if st.button("হিসাব করুন"):
+        h_m = ((h_ft*12)+h_in)*0.0254
+        bmi = w/(h_m**2)
+        st.success(f"আপনার BMI: {bmi:.2f}")
