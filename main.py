@@ -3,6 +3,8 @@ import pandas as pd
 import requests
 from streamlit_lottie import st_lottie
 import time
+import folium
+from streamlit_folium import folium_static
 
 # ================= 1. PAGE CONFIGURATION =================
 st.set_page_config(
@@ -13,7 +15,6 @@ st.set_page_config(
 )
 
 # ================= 2. SPLASH SCREEN (INTRO ANIMATION) =================
-# অ্যাপ ওপেন হলে এই ইন্ট্রো একবার দেখাবে, তারপর মেইন পেজে যাবে
 if 'splash_shown' not in st.session_state:
     st.session_state.splash_shown = False
 
@@ -21,13 +22,13 @@ if not st.session_state.splash_shown:
     st.markdown("""
     <style>
         .stApp { background-color: #000000; }
-        .intro-wrapper {
+        .intro-container {
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             height: 90vh;
-            animation: fadeIn 2s ease-in-out;
+            animation: fadeIn 2.5s ease-in-out;
         }
         .dev-name {
             font-size: 3.5rem;
@@ -35,14 +36,15 @@ if not st.session_state.splash_shown:
             background: linear-gradient(to right, #00c6ff, #0072ff);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
             text-transform: uppercase;
+            text-align: center;
         }
         .uni-name {
-            font-size: 2rem;
+            font-size: 2.2rem;
             color: #ffffff;
             font-weight: 600;
-            margin-bottom: 5px;
+            margin-bottom: 10px;
         }
         .college-name {
             font-size: 1.5rem;
@@ -50,18 +52,18 @@ if not st.session_state.splash_shown:
             font-style: italic;
         }
         @keyframes fadeIn {
-            0% { opacity: 0; transform: scale(0.8); }
-            100% { opacity: 1; transform: scale(1); }
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
         }
     </style>
-    <div class="intro-wrapper">
+    <div class="intro-container">
         <div class="dev-name">MD NAHID MAHMUD</div>
         <div class="uni-name">Southeast University</div>
         <div class="college-name">Ex: Cantonment College Jashore</div>
     </div>
     """, unsafe_allow_html=True)
     
-    time.sleep(4) # ৪ সেকেন্ড পর মেইন পেজ আসবে
+    time.sleep(3.5)
     st.session_state.splash_shown = True
     st.rerun()
 
@@ -78,14 +80,12 @@ def load_lottie(url):
 anim_welcome = load_lottie("https://assets10.lottiefiles.com/packages/lf20_pnycZg.json")
 anim_map = load_lottie("https://assets3.lottiefiles.com/packages/lf20_s5id889b.json")
 anim_doc = load_lottie("https://assets10.lottiefiles.com/packages/lf20_5njp3vgg.json")
+anim_amb = load_lottie("https://assets9.lottiefiles.com/packages/lf20_z4cshyhf.json")
 
-import folium
-from streamlit_folium import folium_static
-
-# --- ADVANCED CSS (SIDEBAR FIX & COLORFUL DESIGN) ---
+# --- ULTIMATE COLORFUL CSS ---
 st.markdown("""
 <style>
-    /* Global Font */
+    /* Fonts */
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap');
     
     html, body, [class*="css"] {
@@ -93,30 +93,17 @@ st.markdown("""
         background-color: #f4f7f6;
     }
 
-    /* --- SIDEBAR VISIBILITY FIX --- */
+    /* --- SIDEBAR FIX (Text Visibility) --- */
     [data-testid="stSidebar"] {
         background-color: #ffffff;
         border-right: 2px solid #e0e0e0;
     }
+    [data-testid="stSidebar"] p, [data-testid="stSidebar"] span, [data-testid="stSidebar"] label {
+        color: #000000 !important; /* Force Black Text */
+        font-weight: 600;
+    }
     
-    /* সাইডবারের লেখাগুলো কালো/গাঢ় নীল করা হলো যাতে দেখা যায় */
-    [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3 {
-        color: #004085 !important;
-    }
-    [data-testid="stSidebar"] label {
-        color: #333333 !important;
-        font-weight: bold;
-    }
-    [data-testid="stSidebar"] .stRadio div[role='radiogroup'] label {
-        color: #333333 !important;
-        font-weight: 500;
-    }
-    /* নির্বাচিত মেনু হাইলাইট */
-    div[role="radiogroup"] > label > div:first-of-type {
-        background-color: #e3f2fd;
-    }
-
-    /* --- MAIN PAGE DESIGN --- */
+    /* --- HERO SECTION --- */
     .hero-title {
         font-size: 3.5rem;
         font-weight: 800;
@@ -135,7 +122,7 @@ st.markdown("""
         margin-bottom: 40px;
     }
 
-    /* COLORFUL FEATURE CARDS */
+    /* --- COLORFUL CARDS (THE PERFECT DESIGN) --- */
     .feature-card {
         background: white;
         padding: 30px;
@@ -145,7 +132,7 @@ st.markdown("""
         transition: all 0.3s ease;
         height: 100%;
         cursor: pointer;
-        border: 1px solid #eee;
+        border: 1px solid #f0f0f0;
     }
     .feature-card:hover {
         transform: translateY(-10px);
@@ -162,18 +149,28 @@ st.markdown("""
         box-shadow: 0 8px 20px rgba(0, 97, 255, 0.3);
     }
 
-    /* Hospital/Doctor Cards */
+    /* Info Cards */
     .info-card {
         background: white;
         padding: 20px;
         border-radius: 15px;
-        border-left: 6px solid #FF4B4B;
+        border-left: 6px solid #FF4B4B; /* Default Red */
         box-shadow: 0 5px 15px rgba(0,0,0,0.05);
         margin-bottom: 15px;
         transition: 0.3s;
     }
     .info-card:hover { transform: translateX(5px); box-shadow: 0 8px 25px rgba(255, 75, 75, 0.2); }
     
+    /* Ambulance Card Special */
+    .amb-card {
+        background: linear-gradient(135deg, #fff5f5, #ffe0e0);
+        border: 2px solid #ffcccc;
+        text-align: center;
+        padding: 20px;
+        border-radius: 15px;
+        margin-bottom: 15px;
+    }
+
     /* Buttons */
     .stButton>button {
         background: linear-gradient(90deg, #0061ff, #00c6ff);
@@ -206,11 +203,11 @@ ALL_DISTRICTS = sorted([
 @st.cache_data
 def load_data():
     try: df_h = pd.read_csv("hospitals_64.csv")
-    except: df_h = pd.DataFrame(columns=["District", "Name", "Location", "Phone", "Lat", "Lon"])
+    except: df_h = pd.DataFrame(columns=["District"])
     try: df_d = pd.read_csv("doctors_64.csv")
-    except: df_d = pd.DataFrame(columns=["District", "Name", "Specialty", "Hospital", "Phone"])
+    except: df_d = pd.DataFrame(columns=["District"])
     try: df_a = pd.read_csv("ambulances_64.csv")
-    except: df_a = pd.DataFrame(columns=["District", "ServiceName", "Contact"])
+    except: df_a = pd.DataFrame(columns=["District"])
     return df_h, df_d, df_a
 
 df_h, df_d, df_a = load_data()
@@ -219,10 +216,10 @@ df_h, df_d, df_a = load_data()
 with st.sidebar:
     st.image("https://cdn-icons-png.flaticon.com/512/3063/3063205.png", width=80)
     st.markdown("### HealthPlus BD")
+    st.caption("Developed by **MD NAHID MAHMUD**")
     
     st.divider()
     
-    # জেলা নির্বাচন
     selected_district = st.selectbox(
         "📍 জেলা নির্বাচন করুন:", 
         ALL_DISTRICTS, 
@@ -239,11 +236,9 @@ with st.sidebar:
 # ================= 6. MAIN CONTENT =================
 
 if menu == "🏠 হোম (Home)":
-    # Hero Title
     st.markdown("<div class='hero-title'>HealthPlus Bangladesh</div>", unsafe_allow_html=True)
     st.markdown(f"<div class='hero-subtitle'>আপনার জেলা: <b>{selected_district}</b> | স্মার্ট স্বাস্থ্য সেবা</div>", unsafe_allow_html=True)
     
-    # Welcome Section
     c1, c2 = st.columns([1.2, 0.8])
     with c1:
         st.markdown(f"""
@@ -253,7 +248,6 @@ if menu == "🏠 হোম (Home)":
         **একনজরে {selected_district}:**
         """)
         
-        # Live Stats
         h_count = len(df_h[df_h['District'] == selected_district])
         d_count = len(df_d[df_d['District'] == selected_district])
         
@@ -263,9 +257,9 @@ if menu == "🏠 হোম (Home)":
         with s3: st.markdown(f"<div class='stat-box'><h2>24/7</h2><p>সার্ভিস</p></div>", unsafe_allow_html=True)
 
     with c2:
-        if anim_welcome: st_lottie(anim_welcome, height=300, key="home_anim")
+        if anim_welcome: st_lottie(anim_welcome, height=300)
 
-    # COLORFUL SERVICES GRID
+    # THE COLORFUL SERVICES GRID
     st.markdown("---")
     st.subheader("🚀 আমাদের সেবাসমূহ")
     
@@ -374,13 +368,28 @@ elif menu == "👨‍⚕️ ডাক্তার খুঁজুন":
 
 # --- AMBULANCE PAGE ---
 elif menu == "🚑 অ্যাম্বুলেন্স":
-    st.markdown(f"## 🚑 অ্যাম্বুলেন্স সার্ভিস")
-    filtered_amb = df_a[(df_a['District'] == selected_district) | (df_a['District'] == 'All BD')]
+    st.markdown(f"## 🚑 অ্যাম্বুলেন্স সার্ভিস ({selected_district})")
+    
+    c1, c2 = st.columns([1, 2])
+    with c1:
+        if anim_amb: st_lottie(anim_amb, height=200)
+    with c2:
+        st.error("🚨 জাতীয় জরুরী সেবা: **999**")
+
+    # Filter for Selected District + "All BD"
+    filtered_amb = df_a[df_a['District'].isin([selected_district, "All BD"])]
+    
     if not filtered_amb.empty:
         for _, row in filtered_amb.iterrows():
-            st.error(f"🚑 {row['ServiceName']}: {row['Contact']}")
+            st.markdown(f"""
+            <div class="amb-card">
+                <h3 style="margin:0; color:#333;">🚑 {row['ServiceName']}</h3>
+                <h1 style="margin:5px 0; color:#FF4B4B;">{row['Contact']}</h1>
+                <a href="tel:{row['Contact']}"><button>সরাসরি কল করুন</button></a>
+            </div>
+            """, unsafe_allow_html=True)
     else:
-        st.error("জাতীয় জরুরী সেবা: **999**")
+        st.warning(f"{selected_district}-এর লোকাল অ্যাম্বুলেন্স ডাটা শীঘ্রই আসছে। ৯৯৯ এ কল করুন।")
 
 # --- BMI PAGE ---
 elif menu == "📊 BMI ক্যালকুলেটর":
