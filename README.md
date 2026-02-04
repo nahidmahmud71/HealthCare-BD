@@ -114,3 +114,13 @@ Doctor Appointment: Integration with APIs to book appointments with local doctor
 User Accounts: Saving user history and BMI progress over time.
 
 
+
+---
+
+## ⚖️ License & Copyright
+
+**© 2026 MD NAHID MAHMUD. All Rights Reserved.**
+
+This project is the intellectual property of MD NAHID MAHMUD**. 
+Unauthorized copying, mirroring, or distribution of this source code, in whole or in part, is strictly prohibited without the express permission of the author.
+
