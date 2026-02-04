@@ -69,7 +69,48 @@ Follow these steps to run the application locally on your machine.
 ### Prerequisites
 Make sure you have [Python](https://www.python.org/downloads/) installed.
 
+
 ### Step 1: Clone the Repository
 ```bash
 git clone [https://github.com/nahidmahmud71/medical-health-companion.git](https://github.com/nahidmahmud71/medical-health-companion.git)
 cd medical-health-companion
+
+Step 2: Create a Virtual Environment (Optional but Rec
+ommended)
+python -m venv venv
+# Windows
+venv\Scripts\activate
+# Mac/Linux
+source venv/bin/activate
+
+Step 3: Install Dependencies
+streamlit
+pandas
+
+
+Install command:
+pip install -r requirements.txt
+
+
+Step 4: Run the Application
+streamlit run app.py
+
+
+📂 Project Structure
+Medical-Health-Companion/
+│
+├── main.py                # The main application code (Logic + UI)
+├── requirements.txt      # List of dependencies
+├── README.md             # Project documentation
+└── .gitignore            # Files to ignore in Git
+
+🚀 Future Scope
+AI Integration: implementing a chatbot to answer specific health queries.
+
+Medicine Reminder: A notification system to remind users to take medication.
+
+Doctor Appointment: Integration with APIs to book appointments with local doctors.
+
+User Accounts: Saving user history and BMI progress over time.
+
+
