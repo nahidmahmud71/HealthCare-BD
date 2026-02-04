@@ -71,5 +71,5 @@ Make sure you have [Python](https://www.python.org/downloads/) installed.
 
 ### Step 1: Clone the Repository
 ```bash
-git clone [https://github.com/your-username/medical-health-companion.git](https://github.com/your-username/medical-health-companion.git)
+git clone [https://github.com/nahidmahmud71/medical-health-companion.git](https://github.com/nahidmahmud71/medical-health-companion.git)
 cd medical-health-companion
